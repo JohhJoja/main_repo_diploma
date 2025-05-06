@@ -20,6 +20,9 @@ public class HelloApplication extends Application {
     private Label templateDescriptionLabel = new Label("Описание шаблона будет здесь...");
     private File selectedFile;
 
+    ///
+    Processor processor = new Processor();
+
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Парсер шаблонов");
@@ -83,6 +86,15 @@ public class HelloApplication extends Application {
 
         Scene scene = new Scene(root, 900, 600);
 
+        parseButton.setOnAction(e -> {
+            if (selectedFile != null) {
+                String type = processor.detectFileType(selectedFile);
+                resultArea.setText("Тип определённого файла: " + type);
+            } else {
+                resultArea.setText("Сначала выберите файл");
+            }
+        });
+
         // Drag & Drop
         root.setOnDragOver(event -> {
             if (event.getGestureSource() != root && event.getDragboard().hasFiles()) {
@@ -124,6 +136,9 @@ public class HelloApplication extends Application {
             if (file != null) {
                 selectedFile = file;
                 templateDescriptionLabel.setText("Файл выбран: " + file.getName());
+                ///
+                Processor.process(file); // пока что просто логика определения типа
+                resultArea.setText("Файл выбран: " + file.getName());
             }
         });
 
@@ -164,4 +179,6 @@ public class HelloApplication extends Application {
     public static void main(String[] args) {
         launch(args);
     }
+
+
 }
