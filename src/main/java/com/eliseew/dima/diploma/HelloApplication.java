@@ -4,14 +4,21 @@ import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
-import java.util.Optional;
+import java.util.List;
 
 public class HelloApplication extends Application {
+
+    private Label templateDescriptionLabel = new Label("Описание шаблона будет здесь...");
+    private File selectedFile;
 
     @Override
     public void start(Stage primaryStage) {
@@ -21,111 +28,137 @@ public class HelloApplication extends Application {
         MenuBar menuBar = new MenuBar();
 
         Menu fileMenu = new Menu("Файл");
-        fileMenu.getItems().addAll(new MenuItem("Открыть файл"), new MenuItem("Сохранить результат"), new SeparatorMenuItem(), new MenuItem("Выход"));
+        MenuItem openFileItem = new MenuItem("Открыть файл");
+        MenuItem saveResultItem = new MenuItem("Сохранить результат");
+        MenuItem importTemplateItem = new MenuItem("Импорт шаблона");
+        MenuItem exportTemplateItem = new MenuItem("Экспорт шаблона");
+        MenuItem exitItem = new MenuItem("Выход");
 
-        Menu templateMenu = new Menu("Шаблоны");
-        templateMenu.getItems().addAll(new MenuItem("Создать шаблон"), new MenuItem("Импорт шаблона"), new MenuItem("Экспорт шаблона"));
+        fileMenu.getItems().addAll(openFileItem, saveResultItem, new SeparatorMenuItem(), importTemplateItem, exportTemplateItem, new SeparatorMenuItem(), exitItem);
 
-        menuBar.getMenus().addAll(fileMenu, templateMenu);
+        Menu helpMenu = new Menu("Помощь");
+        MenuItem aboutItem = new MenuItem("О программе");
+        helpMenu.getItems().add(aboutItem);
+
+        menuBar.getMenus().addAll(fileMenu, helpMenu);
 
         // Левая панель - список шаблонов
         ListView<String> templateList = new ListView<>();
         templateList.getItems().addAll("Шаблон 1", "Шаблон 2");
 
+        Button createButton = new Button("Создать");
         Button deleteButton = new Button("Удалить");
         Button editButton = new Button("Редактировать");
 
-        VBox templateBox = new VBox(10, new Label("Список шаблонов:"), templateList, deleteButton, editButton);
+        VBox templateBox = new VBox(10, new Label("Список шаблонов:"), templateList, createButton, deleteButton, editButton);
         templateBox.setPadding(new Insets(10));
-        templateBox.setPrefWidth(200);
+        templateBox.setPrefWidth(180);
+        templateBox.setStyle("-fx-background-color: #e6f4ec;");
+
+        // Центральная панель - описание шаблона
+        templateDescriptionLabel.setWrapText(true);
+        VBox centerBox = new VBox(10, new Label("Описание шаблона:"), templateDescriptionLabel);
+        centerBox.setPadding(new Insets(10));
+        centerBox.setStyle("-fx-background-color: #ffffff;");
 
         // Правая панель - загрузка и парсинг
         VBox parseBox = new VBox(10);
         parseBox.setPadding(new Insets(10));
+        parseBox.setStyle("-fx-background-color: #e6f4ec;");
 
         Button loadButton = new Button("Загрузить документ");
         Button parseButton = new Button("Применить шаблон");
+        TextArea resultArea = new TextArea();
+        resultArea.setPromptText("Результаты будут здесь...");
+        resultArea.setPrefHeight(300);
 
-        parseBox.getChildren().addAll(loadButton, new Label("Выберите шаблон и нажмите 'Применить шаблон'"), parseButton);
+        parseBox.getChildren().addAll(loadButton, new Label("Выберите шаблон и нажмите 'Применить шаблон'"), parseButton, resultArea);
 
         // Основной layout
         BorderPane root = new BorderPane();
         root.setTop(menuBar);
         root.setLeft(templateBox);
+        root.setCenter(centerBox);
         root.setRight(parseBox);
 
-        Scene scene = new Scene(root, 800, 600);
-        primaryStage.setScene(scene);
-        primaryStage.show();
+        Scene scene = new Scene(root, 900, 600);
 
-        // Обработчики событий
-        templateList.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2 && !templateList.getSelectionModel().isEmpty()) {
-                String selectedTemplate = templateList.getSelectionModel().getSelectedItem();
-                showTemplateEditorWindow(selectedTemplate);
+        // Drag & Drop
+        root.setOnDragOver(event -> {
+            if (event.getGestureSource() != root && event.getDragboard().hasFiles()) {
+                event.acceptTransferModes(TransferMode.COPY);
             }
+            event.consume();
         });
 
-        templateMenu.getItems().get(0).setOnAction(e -> showTemplateEditorWindow(null));
-
-        editButton.setOnAction(e -> {
-            String selectedTemplate = templateList.getSelectionModel().getSelectedItem();
-            if (selectedTemplate != null) {
-                showTemplateEditorWindow(selectedTemplate);
+        root.setOnDragDropped((DragEvent event) -> {
+            Dragboard db = event.getDragboard();
+            boolean success = false;
+            if (db.hasFiles()) {
+                selectedFile = db.getFiles().get(0);
+                templateDescriptionLabel.setText("Файл выбран: " + selectedFile.getName());
+                success = true;
             }
+            event.setDropCompleted(success);
+            event.consume();
         });
 
+        // Логика кнопок
         deleteButton.setOnAction(e -> {
-            String selectedTemplate = templateList.getSelectionModel().getSelectedItem();
-            if (selectedTemplate != null) {
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.setTitle("Подтверждение удаления");
-                alert.setHeaderText("Удалить шаблон?");
-                alert.setContentText("Вы уверены, что хотите удалить шаблон: " + selectedTemplate + "?");
-
-                Optional<ButtonType> result = alert.showAndWait();
-                if (result.isPresent() && result.get() == ButtonType.OK) {
-                    templateList.getItems().remove(selectedTemplate);
-                }
+            String selected = templateList.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+                confirm.setTitle("Подтверждение удаления");
+                confirm.setHeaderText("Удалить шаблон " + selected + "?");
+                confirm.showAndWait().ifPresent(response -> {
+                    if (response == ButtonType.OK) {
+                        templateList.getItems().remove(selected);
+                    }
+                });
             }
         });
 
         loadButton.setOnAction(e -> {
             FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Выберите документ для загрузки");
-            fileChooser.getExtensionFilters().addAll(
-                    new FileChooser.ExtensionFilter("Документы", "*.doc", "*.docx", "*.txt", "*.pdf"),
-                    new FileChooser.ExtensionFilter("Все файлы", "*.*")
-            );
-            File selectedFile = fileChooser.showOpenDialog(primaryStage);
-            if (selectedFile != null) {
-                // логика обработки выбранного файла (заглушка)
-                System.out.println("Файл выбран: " + selectedFile.getAbsolutePath());
+            File file = fileChooser.showOpenDialog(primaryStage);
+            if (file != null) {
+                selectedFile = file;
+                templateDescriptionLabel.setText("Файл выбран: " + file.getName());
             }
         });
-    }
 
-    private void showTemplateEditorWindow(String templateName) {
-        Stage editorStage = new Stage();
-        editorStage.setTitle(templateName == null ? "Создание шаблона" : "Редактирование шаблона: " + templateName);
+        aboutItem.setOnAction(e -> {
+            Alert info = new Alert(Alert.AlertType.INFORMATION);
+            info.setTitle("О программе");
+            info.setHeaderText("Парсер шаблонов");
+            info.setContentText("Программа позволяет загружать шаблоны для парсинга отчетов и применять их к различным документам. Вы можете создавать, редактировать, импортировать и экспортировать шаблоны.");
+            info.showAndWait();
+        });
 
-        VBox layout = new VBox(10);
-        layout.setPadding(new Insets(10));
+        importTemplateItem.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Импорт шаблона");
+            fileChooser.showOpenDialog(primaryStage);
+        });
 
-        TextField nameField = new TextField();
-        nameField.setPromptText("Название шаблона");
-        if (templateName != null) nameField.setText(templateName);
+        exportTemplateItem.setOnAction(e -> {
+            List<String> templates = templateList.getItems();
+            ChoiceDialog<String> dialog = new ChoiceDialog<>(templates.isEmpty() ? null : templates.get(0), templates);
+            dialog.setTitle("Экспорт шаблона");
+            dialog.setHeaderText("Выберите шаблон для экспорта");
+            dialog.setContentText("Шаблон:");
+            dialog.showAndWait();
+        });
 
-        TextArea patternArea = new TextArea();
-        patternArea.setPromptText("Настройки шаблона (ключевые слова, теги и т.д.)");
+        templateList.setOnMouseClicked(event -> {
+            String selected = templateList.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                templateDescriptionLabel.setText("Описание для шаблона: " + selected);
+            }
+        });
 
-        Button saveButton = new Button("Сохранить");
-
-        layout.getChildren().addAll(new Label("Название шаблона:"), nameField, new Label("Параметры шаблона:"), patternArea, saveButton);
-
-        Scene scene = new Scene(layout, 400, 300);
-        editorStage.setScene(scene);
-        editorStage.show();
+        primaryStage.setScene(scene);
+        primaryStage.show();
     }
 
     public static void main(String[] args) {
