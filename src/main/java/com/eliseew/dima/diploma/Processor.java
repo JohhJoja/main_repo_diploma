@@ -7,42 +7,42 @@ import java.nio.file.Files;
 public class Processor {
 
     public static void process(File file) {
-        String fileName = file.getName().toLowerCase();
-
-        if (fileName.endsWith(".txt") || fileName.endsWith(".doc") || fileName.endsWith(".docx") || fileName.endsWith(".csv")) {
-            processTextFile(file);
-        } else if (fileName.endsWith(".xml")) {
-            processXmlFile(file);
-        } else if (fileName.endsWith(".xlsx") || fileName.endsWith(".xls")) {
-            processExcelFile(file);
-        } else if (fileName.endsWith(".gz")) {
-            processGzArchive(file);
-        } else {
-            System.out.println("Неизвестный формат. Попытка обработки как текстового файла: " + fileName);
-            processTextFile(file);
-        }
+//        String fileName = file.getName().toLowerCase();
+//
+//        if (fileName.endsWith(".txt") || fileName.endsWith(".doc") || fileName.endsWith(".docx") || fileName.endsWith(".csv")) {
+//            processTextFile(file);
+//        } else if (fileName.endsWith(".xml")) {
+//            processXmlFile(file);
+//        } else if (fileName.endsWith(".xlsx") || fileName.endsWith(".xls")) {
+//            processExcelFile(file);
+//        } else if (fileName.endsWith(".gz")) {
+//            processGzArchive(file);
+//        } else {
+//            System.out.println("Неизвестный формат. Попытка обработки как текстового файла: " + fileName);
+//            processTextFile(file);
+//        }
     }
 
-    private static void processTextFile(File file) {
-        System.out.println("Обработка текстового файла: " + file.getName());
-        detectTemplateFromTextFile(file);
-        // TODO: сюда будет добавлен парсинг текста
-    }
-
-    private static void processXmlFile(File file) {
-        System.out.println("Обработка XML-файла: " + file.getName());
-        // TODO: сюда будет добавлен парсинг XML
-    }
-
-    private static void processExcelFile(File file) {
-        System.out.println("Обработка Excel-файла: " + file.getName());
-        // TODO: сюда будет добавлен парсинг Excel
-    }
-
-    private static void processGzArchive(File file) {
-        System.out.println("Обработка GZ-архива: " + file.getName());
-        // TODO: сюда будет добавлен разархиватор и дальнейшая обработка
-    }
+//    private static void processTextFile(File file) {
+//        System.out.println("Обработка текстового файла: " + file.getName());
+//        detectTemplateFromTextFile(file);
+//        // TODO: сюда будет добавлен парсинг текста
+//    }
+//
+//    private static void processXmlFile(File file) {
+//        System.out.println("Обработка XML-файла: " + file.getName());
+//        // TODO: сюда будет добавлен парсинг XML
+//    }
+//
+//    private static void processExcelFile(File file) {
+//        System.out.println("Обработка Excel-файла: " + file.getName());
+//        // TODO: сюда будет добавлен парсинг Excel
+//    }
+//
+//    private static void processGzArchive(File file) {
+//        System.out.println("Обработка GZ-архива: " + file.getName());
+//        // TODO: сюда будет добавлен разархиватор и дальнейшая обработка
+//    }
 
     public String detectFileType(File file) {
         String fileName = file.getName().toLowerCase();

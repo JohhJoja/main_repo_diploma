@@ -13,6 +13,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 public class HelloApplication extends Application {
@@ -21,7 +22,7 @@ public class HelloApplication extends Application {
     private File selectedFile;
 
     ///
-    Processor processor = new Processor();
+    FileHandler handler;
 
     @Override
     public void start(Stage primaryStage) {
@@ -88,7 +89,13 @@ public class HelloApplication extends Application {
 
         parseButton.setOnAction(e -> {
             if (selectedFile != null) {
-                String type = processor.detectFileType(selectedFile);
+                try {
+                    handler = new FileHandler(selectedFile);
+                    handler.handle();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+                String type = handler.getType();
                 resultArea.setText("Тип определённого файла: " + type);
             } else {
                 resultArea.setText("Сначала выберите файл");
@@ -137,7 +144,7 @@ public class HelloApplication extends Application {
                 selectedFile = file;
                 templateDescriptionLabel.setText("Файл выбран: " + file.getName());
                 ///
-                Processor.process(file); // пока что просто логика определения типа
+                ///Processor.process(file); // пока что просто логика определения типа
                 resultArea.setText("Файл выбран: " + file.getName());
             }
         });
