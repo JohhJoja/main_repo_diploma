@@ -5,6 +5,8 @@ module com.eliseew.dima.diploma {
     requires org.controlsfx.controls;
     requires org.apache.poi.scratchpad;
     requires org.apache.poi.ooxml;
+    requires com.fasterxml.jackson.core;
+    requires com.fasterxml.jackson.databind;
 
     opens com.eliseew.dima.diploma to javafx.fxml;
     exports com.eliseew.dima.diploma;
