@@ -8,7 +8,6 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -19,10 +18,8 @@ import java.util.List;
 public class HelloApplication extends Application {
 
     private Label templateDescriptionLabel = new Label("Описание шаблона будет здесь...");
-    private File selectedFile;
-
-    ///
-    FileHandler handler;
+    private List<File> selectedFiles;
+    private FileHandler handler;
 
     @Override
     public void start(Stage primaryStage) {
@@ -30,14 +27,12 @@ public class HelloApplication extends Application {
 
         // Меню
         MenuBar menuBar = new MenuBar();
-
         Menu fileMenu = new Menu("Файл");
         MenuItem openFileItem = new MenuItem("Открыть файл");
         MenuItem saveResultItem = new MenuItem("Сохранить результат");
         MenuItem importTemplateItem = new MenuItem("Импорт шаблона");
         MenuItem exportTemplateItem = new MenuItem("Экспорт шаблона");
         MenuItem exitItem = new MenuItem("Выход");
-
         fileMenu.getItems().addAll(openFileItem, saveResultItem, new SeparatorMenuItem(), importTemplateItem, exportTemplateItem, new SeparatorMenuItem(), exitItem);
 
         Menu helpMenu = new Menu("Помощь");
@@ -46,7 +41,7 @@ public class HelloApplication extends Application {
 
         menuBar.getMenus().addAll(fileMenu, helpMenu);
 
-        // Левая панель - список шаблонов
+        // Левая панель - шаблоны
         ListView<String> templateList = new ListView<>();
         templateList.getItems().addAll("Шаблон 1", "Шаблон 2");
 
@@ -59,18 +54,18 @@ public class HelloApplication extends Application {
         templateBox.setPrefWidth(180);
         templateBox.setStyle("-fx-background-color: #e6f4ec;");
 
-        // Центральная панель - описание шаблона
+        // Центр
         templateDescriptionLabel.setWrapText(true);
         VBox centerBox = new VBox(10, new Label("Описание шаблона:"), templateDescriptionLabel);
         centerBox.setPadding(new Insets(10));
         centerBox.setStyle("-fx-background-color: #ffffff;");
 
-        // Правая панель - загрузка и парсинг
+        // Правая панель
         VBox parseBox = new VBox(10);
         parseBox.setPadding(new Insets(10));
         parseBox.setStyle("-fx-background-color: #e6f4ec;");
 
-        Button loadButton = new Button("Загрузить документ");
+        Button loadButton = new Button("Загрузить документы");
         Button parseButton = new Button("Применить шаблон");
         TextArea resultArea = new TextArea();
         resultArea.setPromptText("Результаты будут здесь...");
@@ -78,7 +73,7 @@ public class HelloApplication extends Application {
 
         parseBox.getChildren().addAll(loadButton, new Label("Выберите шаблон и нажмите 'Применить шаблон'"), parseButton, resultArea);
 
-        // Основной layout
+        // Layout
         BorderPane root = new BorderPane();
         root.setTop(menuBar);
         root.setLeft(templateBox);
@@ -87,22 +82,44 @@ public class HelloApplication extends Application {
 
         Scene scene = new Scene(root, 900, 600);
 
-        parseButton.setOnAction(e -> {
-            if (selectedFile != null) {
-                try {
-                    handler = new FileHandler(selectedFile);
-                    handler.handle();
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
-                String type = handler.getType();
-                resultArea.setText("Тип определённого файла: " + type);
+        // Загрузка файлов
+        loadButton.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Выберите документы");
+            selectedFiles = fileChooser.showOpenMultipleDialog(primaryStage);
+
+            if (selectedFiles != null && !selectedFiles.isEmpty()) {
+                templateDescriptionLabel.setText("Выбрано файлов: " + selectedFiles.size());
+                resultArea.setText("Выбрано файлов: " + selectedFiles.size());
             } else {
-                resultArea.setText("Сначала выберите файл");
+                resultArea.setText("Файлы не выбраны");
             }
         });
 
-        // Drag & Drop
+        // Применение шаблона
+        parseButton.setOnAction(e -> {
+            if (selectedFiles != null && !selectedFiles.isEmpty()) {
+                StringBuilder resultBuilder = new StringBuilder();
+
+                for (File file : selectedFiles) {
+                    try {
+                        handler = new FileHandler(file);
+                        handler.handle();
+                        String type = handler.getType();
+                        resultBuilder.append("Файл: ").append(file.getName()).append("\n");
+                        resultBuilder.append("Тип: ").append(type).append("\n\n");
+                    } catch (IOException ex) {
+                        resultBuilder.append("Ошибка файла ").append(file.getName()).append(": ").append(ex.getMessage()).append("\n\n");
+                    }
+                }
+
+                resultArea.setText(resultBuilder.toString());
+            } else {
+                resultArea.setText("Сначала выберите хотя бы один файл");
+            }
+        });
+
+        // Drag and Drop
         root.setOnDragOver(event -> {
             if (event.getGestureSource() != root && event.getDragboard().hasFiles()) {
                 event.acceptTransferModes(TransferMode.COPY);
@@ -112,23 +129,24 @@ public class HelloApplication extends Application {
 
         root.setOnDragDropped((DragEvent event) -> {
             Dragboard db = event.getDragboard();
-            boolean success = false;
             if (db.hasFiles()) {
-                selectedFile = db.getFiles().get(0);
-                templateDescriptionLabel.setText("Файл выбран: " + selectedFile.getName());
-                success = true;
+                selectedFiles = db.getFiles();
+                templateDescriptionLabel.setText("Выброшено файлов: " + selectedFiles.size());
+                resultArea.setText("Выброшено файлов: " + selectedFiles.size());
+                event.setDropCompleted(true);
+            } else {
+                event.setDropCompleted(false);
             }
-            event.setDropCompleted(success);
             event.consume();
         });
 
-        // Логика кнопок
+        // Остальная логика
         deleteButton.setOnAction(e -> {
             String selected = templateList.getSelectionModel().getSelectedItem();
             if (selected != null) {
                 Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-                confirm.setTitle("Подтверждение удаления");
-                confirm.setHeaderText("Удалить шаблон " + selected + "?");
+                confirm.setTitle("Удаление шаблона");
+                confirm.setHeaderText("Удалить шаблон: " + selected + "?");
                 confirm.showAndWait().ifPresent(response -> {
                     if (response == ButtonType.OK) {
                         templateList.getItems().remove(selected);
@@ -137,23 +155,11 @@ public class HelloApplication extends Application {
             }
         });
 
-        loadButton.setOnAction(e -> {
-            FileChooser fileChooser = new FileChooser();
-            File file = fileChooser.showOpenDialog(primaryStage);
-            if (file != null) {
-                selectedFile = file;
-                templateDescriptionLabel.setText("Файл выбран: " + file.getName());
-                ///
-                ///Processor.process(file); // пока что просто логика определения типа
-                resultArea.setText("Файл выбран: " + file.getName());
-            }
-        });
-
         aboutItem.setOnAction(e -> {
             Alert info = new Alert(Alert.AlertType.INFORMATION);
             info.setTitle("О программе");
             info.setHeaderText("Парсер шаблонов");
-            info.setContentText("Программа позволяет загружать шаблоны для парсинга отчетов и применять их к различным документам. Вы можете создавать, редактировать, импортировать и экспортировать шаблоны.");
+            info.setContentText("Программа позволяет загружать шаблоны для парсинга отчетов и применять их к документам. Поддерживается множественная обработка файлов.");
             info.showAndWait();
         });
 
@@ -186,6 +192,4 @@ public class HelloApplication extends Application {
     public static void main(String[] args) {
         launch(args);
     }
-
-
 }

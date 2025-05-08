@@ -7,42 +7,57 @@ import com.eliseew.dima.diploma.parsers.XMLParser;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 
 public class FileHandler {
 
-    private List<String> type_text; //мб без new
-    private String type,text,_result;
-    private File file;
-
-    public void handle() throws IOException {
-        type_text = TypeResolver.resolve(file); ///get type and text
-        assert type_text != null;
-        type = type_text.get(0);
-        System.out.println(type); ///for debug
-        text = type_text.get(1);
-        System.out.println(text); ///for debug
-        _result = ParserResolver(type, text, file); ///get result
-    }
+    private String type;
+    private String text;
+    private String result;
+    private final File file;
 
     public FileHandler(File file) {
         this.file = file;
     }
 
-    private String ParserResolver(String type, String text, File file) {
-        String res = "парсинг не вернул никакого результата";
-        switch (type){
-            case "doc": res = TextParser.parse(text, file);
-            case "xml": res = XMLParser.parse(text, file);
-            case "xls": res = XLSParser.parse(text, file);
-            case "gz": res = GZParser.parse(text, file);
-            // TODO: тут продумать дефолтное поведение
-                // TODO: подумать над родительским классом и интерфейсом, что-то будет
+    public void handle() throws IOException {
+        List<String> typeAndText = TypeResolver.resolve(file);
+        if (typeAndText == null || typeAndText.size() < 2) {
+            throw new IOException("Не удалось определить тип или текст файла: " + file.getName());
         }
-        return res;
+
+        type = typeAndText.get(0);
+        text = typeAndText.get(1);
+
+        result = parseByType(type, text, file);
+
+        System.out.println("Файл: " + file.getName());
+        System.out.println("Тип: " + type);
+        System.out.println("Результат: " + result);
+        System.out.println("-----------------------------------");
+    }
+
+    private String parseByType(String type, String text, File file) {
+        switch (type) {
+            case "doc":
+                return TextParser.parse(text, file);
+            case "xml":
+                return XMLParser.parse(text, file);
+            case "xls":
+                return XLSParser.parse(text, file);
+            case "gz":
+                return GZParser.parse(text, file);
+            default:
+                return "Формат не поддерживается: " + type;
+        }
     }
 
     public String getType() {
         return type;
+    }
+
+    public String getResult() {
+        return result;
     }
 }
