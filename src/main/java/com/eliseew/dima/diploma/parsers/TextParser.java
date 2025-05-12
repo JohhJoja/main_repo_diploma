@@ -1,7 +1,5 @@
 package com.eliseew.dima.diploma.parsers;
 
-import com.eliseew.dima.diploma.parsers.PatternLoader;
-
 import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,20 +12,40 @@ public class TextParser {
         List<TextPatternModel> patterns = PatternLoader.loadAllPatterns("src/main/resources/com/eliseew/dima/diploma/patterns");
 
         for (TextPatternModel model : patterns) {
-            System.out.println("Проверяем шаблон: " + model.trigger);
-            System.out.println("Trigger подходит? " + Pattern.compile(model.trigger, Pattern.DOTALL).matcher(text).find());
+            Pattern triggerPattern = Pattern.compile(model.trigger, Pattern.DOTALL);
+            Matcher triggerMatcher = triggerPattern.matcher(text);
 
-            if (Pattern.compile(model.trigger, Pattern.DOTALL).matcher(text).find()) {
-                Pattern p = Pattern.compile(model.regex, Pattern.DOTALL);
-                Matcher m = p.matcher(text);
+            System.out.println("Проверяем триггер: " + model.trigger);
+            System.out.println("Текст документа:\n" + text);
+
+            if (triggerMatcher.find()) {
+                Pattern regexPattern = Pattern.compile(model.regex, Pattern.DOTALL);
+                Matcher m = regexPattern.matcher(text);
+
                 if (m.find()) {
-                    System.out.println("Matcher matches? Уес" );
+                    // Создаём мапу для хранения найденных значений
+                    Map<String, String> extractedData = new LinkedHashMap<>();
+                    for (int i = 1; i <= m.groupCount(); i++) {
+                        String value = m.group(i);
+                        System.out.println("Группа #" + i + ": " + value);
+                        extractedData.put("group" + i, value);
+                    }
 
                     switch (model.actionType) {
                         case "report":
-                            return model.reportStructure
-                                    .replace("{name}", m.group(1))
-                                    .replace("{surname}", m.group(2));
+                            String report = model.reportStructure;
+                            for (Map.Entry<String, String> entry : extractedData.entrySet()) {
+                                report = report.replace("{" + entry.getKey() + "}", entry.getValue());
+                            }
+                            return report;
+
+                        case "replace":
+                            String modified = text;
+                            for (String value : extractedData.values()) {
+                                modified = modified.replace(value, repeatStars(value.length()));
+                            }
+                            return modified;
+
                         default:
                             return "Неизвестное действие: " + model.actionType;
                     }
@@ -36,5 +54,9 @@ public class TextParser {
         }
 
         return "Тип документа не определен";
+    }
+
+    private static String repeatStars(int length) {
+        return "*".repeat(Math.max(0, length));
     }
 }

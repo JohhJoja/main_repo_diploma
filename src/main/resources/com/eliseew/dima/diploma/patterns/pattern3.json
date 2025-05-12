@@ -1,0 +1,8 @@
+[
+  {
+    "trigger": "(Заявка3|Заявление3)",
+    "regex": "(?s).*дом:\\s*(\\S+).*?квартира:\\s*(\\S+).*",
+    "actionType": "replace",
+    "reportStructure": ""
+  }
+]
