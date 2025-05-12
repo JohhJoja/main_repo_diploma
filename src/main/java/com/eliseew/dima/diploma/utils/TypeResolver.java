@@ -1,4 +1,4 @@
-package com.eliseew.dima.diploma;
+package com.eliseew.dima.diploma.utils;
 
 import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.extractor.WordExtractor;

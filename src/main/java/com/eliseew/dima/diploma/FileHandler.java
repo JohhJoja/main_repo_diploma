@@ -4,10 +4,10 @@ import com.eliseew.dima.diploma.parsers.GZParser;
 import com.eliseew.dima.diploma.parsers.TextParser;
 import com.eliseew.dima.diploma.parsers.XLSParser;
 import com.eliseew.dima.diploma.parsers.XMLParser;
+import com.eliseew.dima.diploma.utils.TypeResolver;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.List;
 
 public class FileHandler {
