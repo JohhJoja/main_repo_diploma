@@ -11,7 +11,9 @@ import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
@@ -96,7 +98,7 @@ public class HelloApplication extends Application {
             }
         });
 
-        // Применение шаблона
+        // Применение шаблона и сохранение результата в файл
         parseButton.setOnAction(e -> {
             if (selectedFiles != null && !selectedFiles.isEmpty()) {
                 StringBuilder resultBuilder = new StringBuilder();
@@ -105,15 +107,18 @@ public class HelloApplication extends Application {
                     try {
                         handler = new FileHandler(file);
                         handler.handle();
-                        String type = handler.getType();
-                        resultBuilder.append("Файл: ").append(file.getName()).append("\n");
-                        resultBuilder.append("Тип: ").append(type).append("\n\n");
+                        String parsedData = handler.getParsedData();  // Здесь ты получаешь реальный результат парсинга
+                        resultBuilder.append(parsedData).append("\n\n");
                     } catch (IOException ex) {
                         resultBuilder.append("Ошибка файла ").append(file.getName()).append(": ").append(ex.getMessage()).append("\n\n");
                     }
                 }
 
-                resultArea.setText(resultBuilder.toString());
+                String resultText = resultBuilder.toString();
+                resultArea.setText(resultText);  // Вывод результата в TextArea
+
+                // Сохранение результата в файл
+                saveResultToFile(resultText);
             } else {
                 resultArea.setText("Сначала выберите хотя бы один файл");
             }
@@ -140,53 +145,24 @@ public class HelloApplication extends Application {
             event.consume();
         });
 
-        // Остальная логика
-        deleteButton.setOnAction(e -> {
-            String selected = templateList.getSelectionModel().getSelectedItem();
-            if (selected != null) {
-                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-                confirm.setTitle("Удаление шаблона");
-                confirm.setHeaderText("Удалить шаблон: " + selected + "?");
-                confirm.showAndWait().ifPresent(response -> {
-                    if (response == ButtonType.OK) {
-                        templateList.getItems().remove(selected);
-                    }
-                });
-            }
-        });
-
-        aboutItem.setOnAction(e -> {
-            Alert info = new Alert(Alert.AlertType.INFORMATION);
-            info.setTitle("О программе");
-            info.setHeaderText("Парсер шаблонов");
-            info.setContentText("Программа позволяет загружать шаблоны для парсинга отчетов и применять их к документам. Поддерживается множественная обработка файлов.");
-            info.showAndWait();
-        });
-
-        importTemplateItem.setOnAction(e -> {
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Импорт шаблона");
-            fileChooser.showOpenDialog(primaryStage);
-        });
-
-        exportTemplateItem.setOnAction(e -> {
-            List<String> templates = templateList.getItems();
-            ChoiceDialog<String> dialog = new ChoiceDialog<>(templates.isEmpty() ? null : templates.get(0), templates);
-            dialog.setTitle("Экспорт шаблона");
-            dialog.setHeaderText("Выберите шаблон для экспорта");
-            dialog.setContentText("Шаблон:");
-            dialog.showAndWait();
-        });
-
-        templateList.setOnMouseClicked(event -> {
-            String selected = templateList.getSelectionModel().getSelectedItem();
-            if (selected != null) {
-                templateDescriptionLabel.setText("Описание для шаблона: " + selected);
-            }
-        });
-
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    private void saveResultToFile(String result) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
+        fileChooser.setTitle("Сохранить результат");
+
+        // Открытие диалогового окна для выбора места сохранения
+        File file = fileChooser.showSaveDialog(null);
+        if (file != null) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                writer.write(result); // Записываем результат в файл
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 
     public static void main(String[] args) {

@@ -34,7 +34,7 @@ public class FileHandler {
 
         System.out.println("Файл: " + file.getName());
         System.out.println("Тип: " + type);
-        System.out.println("Результат: " + result);
+        System.out.println("РезультатЪ: " + result);
         System.out.println("-----------------------------------");
     }
 
@@ -58,6 +58,10 @@ public class FileHandler {
     }
 
     public String getResult() {
+        return result;
+    }
+
+    public String getParsedData() {
         return result;
     }
 }

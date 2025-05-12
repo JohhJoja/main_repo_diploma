@@ -3,6 +3,6 @@
     "trigger": "(Заявка1|Заявление1)",
     "regex": "(?s).*имя:\\s*(\\S+).*?фамилия:\\s*(\\S+).*",
     "actionType": "report",
-    "reportStructure": "Создан отчет: Имя - {name}, Фамилия - {surname}"
+    "reportStructure": "Создан отчетикс: Имъя - {name}, Фамилия - {surname}"
   }
 ]
