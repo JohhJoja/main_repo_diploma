@@ -5,4 +5,5 @@ public class TextPatternModel {
     public String regex;
     public String actionType;
     public String reportStructure;
+    public String replacementValue;
 }

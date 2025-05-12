@@ -40,11 +40,19 @@ public class TextParser {
                             return report;
 
                         case "replace":
-                            String modified = text;
-                            for (String value : extractedData.values()) {
-                                modified = modified.replace(value, repeatStars(value.length()));
+                            String replacement = model.replacementValue != null ? model.replacementValue : "*****";
+                            String modifiedText = text;
+
+                            // Обрабатываем все совпадения, а не только первое
+                            m.reset();
+                            while (m.find()) {
+                                for (int i = 1; i <= m.groupCount(); i++) {
+                                    modifiedText = modifiedText.replace(m.group(i), replacement);
+                                }
                             }
-                            return modified;
+
+                            return modifiedText;
+
 
                         default:
                             return "Неизвестное действие: " + model.actionType;
