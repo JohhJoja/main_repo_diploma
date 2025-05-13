@@ -201,7 +201,7 @@ public class TemplateCreationWindow {
             }
             System.out.println("================================");
 
-            TemplateDataProcessor.process(name, type, description, docIds, action, reportText, keywords);
+            TemplateDataProcessor TDP = new TemplateDataProcessor(name, type, description,reportText , action,  docIds, keywords);
         });
 
 
