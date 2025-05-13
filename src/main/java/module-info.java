@@ -14,4 +14,6 @@ module com.eliseew.dima.diploma {
     opens com.eliseew.dima.diploma.parsers to javafx.fxml;
     exports com.eliseew.dima.diploma.utils;
     opens com.eliseew.dima.diploma.utils to javafx.fxml;
+    exports com.eliseew.dima.diploma.windows;
+    opens com.eliseew.dima.diploma.windows to javafx.fxml;
 }

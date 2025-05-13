@@ -1,5 +1,6 @@
-package com.eliseew.dima.diploma;
+package com.eliseew.dima.diploma.windows;
 
+import com.eliseew.dima.diploma.FileHandler;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -83,6 +84,13 @@ public class HelloApplication extends Application {
         root.setRight(parseBox);
 
         Scene scene = new Scene(root, 900, 600);
+
+        //Открытие окна создания
+        createButton.setOnAction(e -> {
+            TemplateCreationWindow creationWindow = new TemplateCreationWindow();
+            creationWindow.show();  // Отображаем новое окно
+        });
+
 
         // Загрузка файлов
         loadButton.setOnAction(e -> {
