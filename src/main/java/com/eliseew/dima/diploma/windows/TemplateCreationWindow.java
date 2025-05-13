@@ -7,6 +7,11 @@ import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import com.eliseew.dima.diploma.utils.TemplateDataProcessor;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class TemplateCreationWindow {
 
     public void show() {
@@ -61,7 +66,7 @@ public class TemplateCreationWindow {
         // Ключевые слова
         Label keywordLabel = new Label("Ключевые слова:");
         VBox keywordBox = new VBox(5);
-        Label regexPreview = new Label("Регулярка: ");
+        Label regexPreview = new Label("Регулярка: "); // Можно оставить
 
         HBox keywordInputBox = createKeywordRow(keywordBox, regexPreview);
         keywordBox.getChildren().add(keywordInputBox);
@@ -121,6 +126,41 @@ public class TemplateCreationWindow {
                 saveButton
         );
 
+        saveButton.setOnAction(e -> {
+            String name = nameField.getText();
+            String type = typeCombo.getValue();
+            String description = descriptionArea.getText();
+            String action = actionCombo.getValue();
+            String reportText = actionArea.getText();
+
+            // Идентификаторы
+            List<String> docIds = new ArrayList<>();
+            for (javafx.scene.Node node : identifierBox.getChildren()) {
+                if (node instanceof HBox hbox) {
+                    for (javafx.scene.Node child : hbox.getChildren()) {
+                        if (child instanceof TextField tf && !tf.getText().isEmpty()) {
+                            docIds.add(tf.getText());
+                        }
+                    }
+                }
+            }
+
+            // Ключевые слова
+            List<String> keywords = new ArrayList<>();
+            for (javafx.scene.Node node : keywordBox.getChildren()) {
+                if (node instanceof HBox hbox) {
+                    for (javafx.scene.Node child : hbox.getChildren()) {
+                        if (child instanceof TextField tf && !tf.getText().isEmpty()) {
+                            keywords.add(tf.getText());
+                        }
+                    }
+                }
+            }
+
+            // Вызов обработчика
+            TemplateDataProcessor.process(name, type, description, docIds, action, reportText, keywords);
+        });
+
         Scene scene = new Scene(layout, 750, 700);
         window.setScene(scene);
         window.show();
@@ -150,57 +190,12 @@ public class TemplateCreationWindow {
                 row.getChildren().remove(secondField);
                 secondField.setVisible(false);
             }
-            updateRegex(parentBox, regexPreview);
         });
-
-        // Обновлять регулярку при вводе текста
-        firstField.textProperty().addListener((obs, oldVal, newVal) -> updateRegex(parentBox, regexPreview));
-        secondField.textProperty().addListener((obs, oldVal, newVal) -> updateRegex(parentBox, regexPreview));
-        positionCombo.valueProperty().addListener((obs, oldVal, newVal) -> updateRegex(parentBox, regexPreview));
 
         removeButton.setOnAction(e -> {
             parentBox.getChildren().remove(row);
-            updateRegex(parentBox, regexPreview);
         });
 
         return row;
-    }
-
-    private void updateRegex(VBox keywordBox, Label previewLabel) {
-        StringBuilder regex = new StringBuilder();
-        for (javafx.scene.Node node : keywordBox.getChildren()) {
-            if (node instanceof HBox hbox) {
-                TextField word1 = null;
-                TextField word2 = null;
-                ComboBox<?> combo = null;
-
-                for (javafx.scene.Node child : hbox.getChildren()) {
-                    if (child instanceof TextField field) {
-                        if (word1 == null) word1 = field;
-                        else word2 = field;
-                    } else if (child instanceof ComboBox<?>) {
-                        combo = (ComboBox<?>) child;
-                    }
-                }
-
-                if (combo != null && word1 != null) {
-                    String position = combo.getValue().toString();
-                    switch (position) {
-                        case "до" -> regex.append(".*?(?=").append(word1.getText()).append(")");
-                        case "после" -> regex.append("(?<=").append(word1.getText()).append(").*?");
-                        case "между" -> {
-                            if (word2 != null) {
-                                regex.append("(?<=").append(word2.getText()).append(").*?(?=").append(word1.getText()).append(")");
-                            }
-                        }
-                    }
-                    regex.append(" | ");
-                }
-            }
-        }
-        if (regex.length() >= 3) {
-            regex.setLength(regex.length() - 3); // убрать последний " | "
-        }
-        previewLabel.setText("Регулярка: " + regex);
     }
 }
