@@ -1,14 +1,13 @@
 package com.eliseew.dima.diploma.windows;
 
 import com.eliseew.dima.diploma.utils.KeywordEntry;
+import com.eliseew.dima.diploma.utils.TemplateDataProcessor;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-
-import com.eliseew.dima.diploma.utils.TemplateDataProcessor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +23,6 @@ public class TemplateCreationWindow {
         layout.setPadding(new Insets(15));
         layout.setStyle("-fx-background-color: #e6f4ec;");
 
-        // Тип документа + Название шаблона
         Label typeLabel = new Label("Тип документа:");
         ComboBox<String> typeCombo = new ComboBox<>();
         typeCombo.getItems().addAll("text (txt)", "word", "excel", "gz");
@@ -41,19 +39,16 @@ public class TemplateCreationWindow {
 
         HBox topRow = new HBox(10, typeLabel, typeCombo, nameLabel, nameField);
 
-        // Описание шаблона
         Label descriptionLabel = new Label("Описание шаблона:");
         TextArea descriptionArea = new TextArea();
         descriptionArea.setPromptText("Введите описание...");
         descriptionArea.setPrefRowCount(2);
         descriptionArea.setWrapText(true);
 
-        // Идентификатор документа
         Label identifierLabel = new Label("Идентификатор документа:");
         VBox identifierBox = new VBox(5);
         TextField idField = new TextField();
         Button addIdButton = new Button("+");
-        Tooltip.install(addIdButton, new Tooltip("Добавить варианты"));
         HBox idInputBox = new HBox(5, idField, addIdButton);
         identifierBox.getChildren().add(idInputBox);
         addIdButton.setOnAction(e -> {
@@ -64,29 +59,24 @@ public class TemplateCreationWindow {
             removeBtn.setOnAction(ev -> identifierBox.getChildren().remove(row));
         });
 
-        // Ключевые слова
         Label keywordLabel = new Label("Ключевые слова:");
         VBox keywordBox = new VBox(5);
-        Label regexPreview = new Label("Регулярка: "); // Можно оставить
-
-        HBox keywordInputBox = createKeywordRow(keywordBox, regexPreview);
+        HBox keywordInputBox = createKeywordRow(keywordBox);
         keywordBox.getChildren().add(keywordInputBox);
 
         Button addKeywordButton = new Button("+");
-        Tooltip.install(addKeywordButton, new Tooltip("Добавить ключевое слово"));
         addKeywordButton.setOnAction(e -> {
-            HBox newKeywordRow = createKeywordRow(keywordBox, regexPreview);
+            HBox newKeywordRow = createKeywordRow(keywordBox);
             keywordBox.getChildren().add(newKeywordRow);
         });
 
-        VBox keywordWrapper = new VBox(5, keywordBox, addKeywordButton, regexPreview);
+        VBox keywordWrapper = new VBox(5, keywordBox, addKeywordButton);
 
-        // Действие
         Label actionLabel = new Label("Действие:");
         ComboBox<String> actionCombo = new ComboBox<>();
         actionCombo.getItems().addAll("отчет", "замена");
 
-        Label instructionLabel = new Label("Используйте k1, k2 и т.д. в тексте ниже:");
+        Label instructionLabel = new Label();
         instructionLabel.setVisible(false);
 
         TextArea actionArea = new TextArea();
@@ -114,7 +104,6 @@ public class TemplateCreationWindow {
             }
         });
 
-        // Кнопка сохранить
         Button saveButton = new Button("Сохранить шаблон");
 
         layout.getChildren().addAll(
@@ -134,7 +123,16 @@ public class TemplateCreationWindow {
             String action = actionCombo.getValue();
             String reportText = actionArea.getText();
 
-            // Идентификаторы
+            // Проверка на пустые поля
+            if (name.isEmpty() || description.isEmpty() || action == null || action.isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Ошибка");
+                alert.setHeaderText("Поля не могут быть пустыми");
+                alert.setContentText("Пожалуйста, заполните все обязательные поля.");
+                alert.showAndWait();
+                return;
+            }
+
             List<String> docIds = new ArrayList<>();
             for (javafx.scene.Node node : identifierBox.getChildren()) {
                 if (node instanceof HBox hbox) {
@@ -146,22 +144,25 @@ public class TemplateCreationWindow {
                 }
             }
 
-            // Ключевые слова
             List<KeywordEntry> keywords = new ArrayList<>();
             for (javafx.scene.Node node : keywordBox.getChildren()) {
                 if (node instanceof HBox hbox) {
                     TextField key1Field = null;
                     TextField key2Field = null;
                     ComboBox<String> positionCombo = null;
+                    ComboBox wordCountField = null;
 
                     for (javafx.scene.Node child : hbox.getChildren()) {
                         if (child instanceof TextField tf) {
-                            if (key1Field == null) {
+                            if (tf.isVisible() && key1Field == null) {
                                 key1Field = tf;
-                            } else {
+                            } else if (tf.isVisible() && key2Field == null) {
                                 key2Field = tf;
                             }
+                        } else if (child instanceof ComboBox<?> cb && cb.getValue() instanceof Integer) {
+                            wordCountField = (ComboBox<Integer>) cb;
                         }
+
                         if (child instanceof ComboBox<?> cb && cb.getValue() instanceof String) {
                             positionCombo = (ComboBox<String>) cb;
                         }
@@ -169,55 +170,91 @@ public class TemplateCreationWindow {
 
                     if (positionCombo != null && key1Field != null && !key1Field.getText().isEmpty()) {
                         String position = positionCombo.getValue();
-                        if ("между".equals(position) && key2Field != null && !key2Field.getText().isEmpty()) {
+                        if ("between".equals(position) && key2Field != null && !key2Field.getText().isEmpty()) {
+                            // Обработка "between"
                             keywords.add(new KeywordEntry(key1Field.getText(), key2Field.getText(), position));
                         } else {
-                            keywords.add(new KeywordEntry(key1Field.getText(), position));
+                            // Обработка для "before" и "after"
+                            int wordCount = wordCountField != null ? (int) wordCountField.getValue() : 1;
+
+                            keywords.add(new KeywordEntry(key1Field.getText(), position, wordCount));
                         }
                     }
                 }
             }
 
+            // Печать полученных данных
+            System.out.println("== Получены данные шаблона ===");
+            System.out.println("Название: " + name);
+            System.out.println("Тип: " + type);
+            System.out.println("Описание: " + description);
+            System.out.println("Идентификаторы документа:");
+            for (String docId : docIds) {
+                System.out.println("  - " + docId);
+            }
+            System.out.println("Действие: " + action);
+            System.out.println("Текст/Замена: " + reportText);
+            System.out.println("Ключевые слова:");
+            for (int i = 0; i < keywords.size(); i++) {
+                KeywordEntry keyword = keywords.get(i);
+                System.out.println("  k" + (i + 1) + ": " + keyword);
+            }
+            System.out.println("================================");
 
-            // Вызов обработчика
             TemplateDataProcessor.process(name, type, description, docIds, action, reportText, keywords);
         });
+
+
 
         Scene scene = new Scene(layout, 750, 700);
         window.setScene(scene);
         window.show();
     }
 
-    private HBox createKeywordRow(VBox parentBox, Label regexPreview) {
+    private HBox createKeywordRow(VBox parentBox) {
         Label searchLabel = new Label("Искать");
         TextField firstField = new TextField();
-        ComboBox<String> positionCombo = new ComboBox<>();
-        positionCombo.getItems().addAll("до", "после", "между");
-        positionCombo.setValue("до");
-
         TextField secondField = new TextField();
         secondField.setVisible(false);
 
-        HBox row = new HBox(5);
-        Button removeButton = new Button("-");
-        row.getChildren().addAll(searchLabel, firstField, positionCombo, removeButton);
+        ComboBox<String> positionCombo = new ComboBox<>();
+        positionCombo.getItems().addAll("before", "after", "between");
+        positionCombo.setValue("before");
 
+        Label countLabel = new Label("Кол-во слов:");
+        ComboBox<Integer> wordCountCombo = new ComboBox<>();
+        wordCountCombo.getItems().addAll(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        wordCountCombo.setValue(1);
+        wordCountCombo.setPrefWidth(50);
+
+        Button removeButton = new Button("-");
+
+        // Создание строки с полями
+        HBox row = new HBox(5, searchLabel, firstField, positionCombo, countLabel, wordCountCombo, removeButton);
+
+        // Обработка изменения позиции в ComboBox
         positionCombo.setOnAction(e -> {
-            if (positionCombo.getValue().equals("между")) {
+            String selected = positionCombo.getValue();
+            if ("between".equals(selected)) {
                 if (!row.getChildren().contains(secondField)) {
-                    row.getChildren().add(1, secondField); // вставить перед firstField
+                    row.getChildren().add(2, secondField);
                     secondField.setVisible(true);
                 }
+                countLabel.setVisible(false);
+                wordCountCombo.setVisible(false);
             } else {
                 row.getChildren().remove(secondField);
                 secondField.setVisible(false);
+                countLabel.setVisible(true);
+                wordCountCombo.setVisible(true);
             }
         });
 
-        removeButton.setOnAction(e -> {
-            parentBox.getChildren().remove(row);
-        });
+        // Удаление строки
+        removeButton.setOnAction(e -> parentBox.getChildren().remove(row));
 
         return row;
     }
+
+
 }

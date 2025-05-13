@@ -1,7 +1,5 @@
 package com.eliseew.dima.diploma.utils;
 
-import com.eliseew.dima.diploma.utils.KeywordEntry;
-
 import java.util.List;
 
 public class TemplateDataProcessor {
@@ -20,8 +18,7 @@ public class TemplateDataProcessor {
         System.out.println("Текст/Замена: " + reportText);
         System.out.println("Ключевые слова:");
         for (int i = 0; i < keywords.size(); i++) {
-            KeywordEntry entry = keywords.get(i);
-            System.out.println("  k" + (i + 1) + ": " + entry);
+            System.out.println("  k" + (i + 1) + ": " + keywords.get(i));
         }
         System.out.println("================================");
     }

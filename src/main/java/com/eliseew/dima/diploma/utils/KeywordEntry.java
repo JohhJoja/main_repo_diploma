@@ -1,8 +1,15 @@
 package com.eliseew.dima.diploma.utils;
 
-public class KeywordEntry {private String key1;
-    private String key2; // Для случая "между"
+public class KeywordEntry {
+    private String key1;
+    private String key2;
     private String position;
+    private int wordCount = 1;
+
+    public KeywordEntry(String key1, String position) {
+        this.key1 = key1;
+        this.position = position;
+    }
 
     public KeywordEntry(String key1, String key2, String position) {
         this.key1 = key1;
@@ -10,28 +17,24 @@ public class KeywordEntry {private String key1;
         this.position = position;
     }
 
-    public KeywordEntry(String key1, String position) {
-        this(key1, null, position);
+    public KeywordEntry(String key1, String position, int wordCount) {
+        this.key1 = key1;
+        this.position = position;
+        this.wordCount = wordCount;
     }
 
-    public String getKey1() {
-        return key1;
-    }
-
-    public String getKey2() {
-        return key2;
-    }
-
-    public String getPosition() {
-        return position;
-    }
+    public String getKey1() { return key1; }
+    public String getKey2() { return key2; }
+    public String getPosition() { return position; }
+    public int getWordCount() { return wordCount; }
 
     @Override
     public String toString() {
-        if ("между".equals(position)) {
-            return "Между \"" + key1 + "\" и \"" + key2 + "\"";
-        } else {
-            return position + " \"" + key1 + "\"";
-        }
+        return "KeywordEntry{" +
+                "key1='" + key1 + '\'' +
+                ", key2='" + key2 + '\'' +
+                ", position='" + position + '\'' +
+                ", wordCount=" + wordCount +
+                '}';
     }
 }
