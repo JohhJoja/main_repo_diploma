@@ -1,5 +1,6 @@
 package com.eliseew.dima.diploma.windows;
 
+import com.eliseew.dima.diploma.utils.KeywordEntry;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -146,16 +147,37 @@ public class TemplateCreationWindow {
             }
 
             // Ключевые слова
-            List<String> keywords = new ArrayList<>();
+            List<KeywordEntry> keywords = new ArrayList<>();
             for (javafx.scene.Node node : keywordBox.getChildren()) {
                 if (node instanceof HBox hbox) {
+                    TextField key1Field = null;
+                    TextField key2Field = null;
+                    ComboBox<String> positionCombo = null;
+
                     for (javafx.scene.Node child : hbox.getChildren()) {
-                        if (child instanceof TextField tf && !tf.getText().isEmpty()) {
-                            keywords.add(tf.getText());
+                        if (child instanceof TextField tf) {
+                            if (key1Field == null) {
+                                key1Field = tf;
+                            } else {
+                                key2Field = tf;
+                            }
+                        }
+                        if (child instanceof ComboBox<?> cb && cb.getValue() instanceof String) {
+                            positionCombo = (ComboBox<String>) cb;
+                        }
+                    }
+
+                    if (positionCombo != null && key1Field != null && !key1Field.getText().isEmpty()) {
+                        String position = positionCombo.getValue();
+                        if ("между".equals(position) && key2Field != null && !key2Field.getText().isEmpty()) {
+                            keywords.add(new KeywordEntry(key1Field.getText(), key2Field.getText(), position));
+                        } else {
+                            keywords.add(new KeywordEntry(key1Field.getText(), position));
                         }
                     }
                 }
             }
+
 
             // Вызов обработчика
             TemplateDataProcessor.process(name, type, description, docIds, action, reportText, keywords);
