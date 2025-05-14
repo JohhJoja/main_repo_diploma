@@ -1,7 +1,7 @@
 [ {
   "description" : "zwexdcfvgbhnj",
   "trigger" : "(exrctv|vygyvyh)",
-  "regex" : "(?si).*((?:[\\p{L}\\p{N}]+\\s+){1})\\W*\\Qtcygbhnj\\E\\Q fghjnm\\E\\W*((?:[\\p{L}\\p{N}]+\\s+){3})\\Qvyubink\\E\\W*([\\p{L}\\p{N}\\s]+?)\\W*\\Qtcyvgubhjnk\\E.*",
+  "regex": "(?s).*имя:\\s*(?<k1>\\S+).*?фамилия:\\s*(?<k2>\\S+).*",
   "actionType" : "replace",
   "replacementValue" : "*********",
   "reportStructure" : null

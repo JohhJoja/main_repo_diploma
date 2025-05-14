@@ -1,9 +1,10 @@
 [
   {
+    "description": "dddddd",
     "trigger": "(Заявка1|Заявление1)",
-    "regex": "(?s).*имя:\\s*(\\S+).*?фамилия:\\s*(\\S+).*",
+    "regex": "(?s).*имя:\\s*(?<k1>\\S+).*?фамилия:\\s*(?<k2>\\S+).*",
     "actionType": "report",
     "replacementValue": "",
-    "reportStructure": "Создан отчетикс: Имъя - {group1}, Фамилия - {group2}"
+    "reportStructure": "Создан отчетикс: Имъя - {k1}, Фамилия - {k2}"
   }
 ]

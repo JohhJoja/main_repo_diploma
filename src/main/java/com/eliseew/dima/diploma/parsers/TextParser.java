@@ -15,26 +15,17 @@ public class TextParser {
             Pattern triggerPattern = Pattern.compile(model.trigger, Pattern.DOTALL);
             Matcher triggerMatcher = triggerPattern.matcher(text);
 
-            System.out.println("Проверяем триггер: " + model.trigger);
-            System.out.println("Текст документа:\n" + text);
-
             if (triggerMatcher.find()) {
                 Pattern regexPattern = Pattern.compile(model.regex, Pattern.DOTALL);
                 Matcher m = regexPattern.matcher(text);
 
                 if (m.find()) {
-                    // Создаём мапу для хранения найденных значений
-                    Map<String, String> extractedData = new LinkedHashMap<>();
-                    for (int i = 1; i <= m.groupCount(); i++) {
-                        String value = m.group(i);
-                        System.out.println("Группа #" + i + ": " + value);
-                        extractedData.put("group" + i, value);
-                    }
+                    Map<String, String> namedGroups = getNamedGroups(m);
 
                     switch (model.actionType) {
                         case "report":
                             String report = model.reportStructure;
-                            for (Map.Entry<String, String> entry : extractedData.entrySet()) {
+                            for (Map.Entry<String, String> entry : namedGroups.entrySet()) {
                                 report = report.replace("{" + entry.getKey() + "}", entry.getValue());
                             }
                             return report;
@@ -43,16 +34,16 @@ public class TextParser {
                             String replacement = model.replacementValue != null ? model.replacementValue : "*****";
                             String modifiedText = text;
 
-                            // Обрабатываем все совпадения, а не только первое
                             m.reset();
                             while (m.find()) {
-                                for (int i = 1; i <= m.groupCount(); i++) {
-                                    modifiedText = modifiedText.replace(m.group(i), replacement);
+                                for (String key : namedGroups.keySet()) {
+                                    String value = namedGroups.get(key);
+                                    if (value != null && !value.isEmpty()) {
+                                        modifiedText = modifiedText.replace(value, replacement);
+                                    }
                                 }
                             }
-
                             return modifiedText;
-
 
                         default:
                             return "Неизвестное действие: " + model.actionType;
@@ -60,11 +51,24 @@ public class TextParser {
                 }
             }
         }
-
         return "Тип документа не определен";
     }
 
-    private static String repeatStars(int length) {
-        return "*".repeat(Math.max(0, length));
+    // Вытаскивает именованные группы
+    private static Map<String, String> getNamedGroups(Matcher matcher) {
+        Map<String, String> namedGroups = new LinkedHashMap<>();
+        Pattern namedGroupPattern = Pattern.compile("\\(\\?<([a-zA-Z][a-zA-Z0-9]*)>");
+        Matcher m = namedGroupPattern.matcher(matcher.pattern().toString());
+
+        while (m.find()) {
+            String groupName = m.group(1);
+            try {
+                namedGroups.put(groupName, matcher.group(groupName));
+            } catch (IllegalArgumentException ignored) {
+                // Игнорируем если не найдена такая группа
+            }
+        }
+
+        return namedGroups;
     }
 }

@@ -42,6 +42,12 @@ public class TemplateDataProcessor {
         // Преобразуем trigger (список строк) в строку в формате "(k1|k2|k3)"
         String triggerString = "(" + String.join("|", docIds) + ")";  // Используем | для соединения элементов
 
+        if ("отчет".equals(action)) {
+            for (int i = 1; i <= keywords.size(); i++) {
+                reportText = reportText.replaceAll("(?<!\\{)k" + i + "(?!\\})", "\\{k" + i + "\\}");
+            }
+        }
+
         // Создаем объект JSON для записи
         TemplateJson json = new TemplateJson(
 
@@ -50,6 +56,7 @@ public class TemplateDataProcessor {
                 regex,
                 action,
                 "замена".equals(action) ? reportText : null,
+
                 "отчет".equals(action) ? reportText : null
         );
 
@@ -72,34 +79,32 @@ public class TemplateDataProcessor {
         }
     }
 
-
     public String generateRegex() {
         StringBuilder regexBuilder = new StringBuilder("(?si).*");
+        int groupIndex = 1;
 
         for (KeywordEntry keyword : keywords) {
             String key1 = keyword.getKey1();
             String key2 = keyword.getKey2();
             int wordCount = keyword.getWordCount();
+            String groupName = "k" + groupIndex++;
 
             switch (keyword.getPosition()) {
                 case "before":
-                    regexBuilder.append("((?:[\\p{L}\\p{N}]+\\s+){")
-                            .append(wordCount)
-                            .append("})")
-                            .append("\\W*")
-                            .append(Pattern.quote(key1));
+                    regexBuilder.append("(?<").append(groupName).append(">")
+                            .append("(?:[\\p{L}\\p{N}]+\\s+){").append(wordCount).append("})")
+                            .append("\\W*").append(Pattern.quote(key1));
                     break;
                 case "after":
                     regexBuilder.append(Pattern.quote(key1))
                             .append("\\W*")
-                            .append("((?:[\\p{L}\\p{N}]+\\s+){")
-                            .append(wordCount)
-                            .append("})");
+                            .append("(?<").append(groupName).append(">")
+                            .append("(?:[\\p{L}\\p{N}]+\\s+){").append(wordCount).append("})");
                     break;
                 case "between":
                     regexBuilder.append(Pattern.quote(key1))
                             .append("\\W*")
-                            .append("([\\p{L}\\p{N}\\s]+?)")
+                            .append("(?<").append(groupName).append(">[\\p{L}\\p{N}\\s]+?)")
                             .append("\\W*")
                             .append(Pattern.quote(key2));
                     break;
@@ -109,7 +114,6 @@ public class TemplateDataProcessor {
         regexBuilder.append(".*");
         return regexBuilder.toString();
     }
-
 
     @Override
     public String toString() {
