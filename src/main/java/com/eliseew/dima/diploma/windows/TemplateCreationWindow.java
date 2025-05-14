@@ -201,10 +201,8 @@ public class TemplateCreationWindow {
             }
             System.out.println("================================");
 
-            TemplateDataProcessor TDP = new TemplateDataProcessor(name, type, description,reportText , action,  docIds, keywords);
+            TemplateDataProcessor TDP = new TemplateDataProcessor(name, type, description, action, reportText, docIds, keywords);
         });
-
-
 
         Scene scene = new Scene(layout, 750, 700);
         window.setScene(scene);
@@ -255,6 +253,5 @@ public class TemplateCreationWindow {
 
         return row;
     }
-
 
 }

@@ -1,0 +1,8 @@
+{
+  "description" : "bvefcds",
+  "trigger" : [ "trgfed" ],
+  "regex" : "(?si).*((?:[\\p{L}\\p{N}]+\\s+){1})\\W*\\Qgfv\\E.*",
+  "actionType" : "report",
+  "replacementValue" : null,
+  "reportStructure" : "k1 k2 k3"
+}

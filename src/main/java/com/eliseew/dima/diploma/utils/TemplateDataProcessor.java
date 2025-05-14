@@ -1,7 +1,12 @@
 package com.eliseew.dima.diploma.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.io.File;
+import java.io.IOException;
 
 public class TemplateDataProcessor {
     String name, type, description, action, reportText;
@@ -20,49 +25,91 @@ public class TemplateDataProcessor {
     }
 
     public void process() {
-        StringBuilder regexBuilder = new StringBuilder("(?s).*");
-
-        for (int i = 0; i < keywords.size(); i++) {
-            KeywordEntry keyword = keywords.get(i);
-            String key1 = keyword.getKey1();
-            String key2 = keyword.getKey2();
-            int wordCount = keyword.getWordCount();
-
-            switch (keyword.getPosition()) {
-                case "before": {
-                    // Точное количество слов перед key1
-                    regexBuilder.append("(\\S+\\s+){")
-                            .append(wordCount)
-                            .append("}")
-                            .append(Pattern.quote(key1));
-                    break;
-                }
-                case "after": {
-                    // Точное количество слов после key1
-                    regexBuilder.append(Pattern.quote(key1))
-                            .append("\\s+")
-                            .append("(\\S+\\s+){")
-                            .append(wordCount)
-                            .append("}");
-                    break;
-                }
-                case "between": {
-                    // Все слова между key1 и key2, без жадности
-                    regexBuilder.append(Pattern.quote(key1))
-                            .append("((\\S+\\s+)*?)")  // Ненасытный захват между key1 и key2
-                            .append(Pattern.quote(key2));
-                    break;
-                }
-            }
-        }
-        regexBuilder.append(".*");
-        System.out.println("Сгенерированная регулярка: " + regexBuilder.toString());
+        String regex = generateRegex();
+        System.out.println("Сгенерированная регулярка: " + regex);
+        exportToJsonFile();
     }
 
     private String generateWordPattern(int wordCount) {
         if (wordCount <= 1) return "\\S+";
         return "(\\S+\\s+){" + (wordCount - 1) + "}\\S+";
     }
+
+    public void exportToJsonFile() {
+        // Генерация регулярного выражения
+        String regex = generateRegex();
+
+        // Преобразуем trigger (список строк) в строку в формате "(k1|k2|k3)"
+        String triggerString = "(" + String.join("|", docIds) + ")";  // Используем | для соединения элементов
+
+        // Создаем объект JSON для записи
+        TemplateJson json = new TemplateJson(
+
+                description,
+                triggerString,  // Здесь заменяем список на строку
+                regex,
+                action,
+                "замена".equals(action) ? reportText : null,
+                "отчет".equals(action) ? reportText : null
+        );
+
+        // Пишем в JSON файл
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            File dir = new File("templates");
+            if (!dir.exists()) dir.mkdir();
+            File outFile = new File(dir, name + ".json");
+
+            // Оборачиваем в список
+            List<TemplateJson> jsonList = new ArrayList<>();
+            jsonList.add(json);
+
+            // Запись в файл
+            mapper.writerWithDefaultPrettyPrinter().writeValue(outFile, jsonList);
+            System.out.println("Шаблон сохранён в: " + outFile.getAbsolutePath());
+        } catch (IOException e) {
+            System.err.println("Ошибка при сохранении JSON: " + e.getMessage());
+        }
+    }
+
+
+    public String generateRegex() {
+        StringBuilder regexBuilder = new StringBuilder("(?si).*");
+
+        for (KeywordEntry keyword : keywords) {
+            String key1 = keyword.getKey1();
+            String key2 = keyword.getKey2();
+            int wordCount = keyword.getWordCount();
+
+            switch (keyword.getPosition()) {
+                case "before":
+                    regexBuilder.append("((?:[\\p{L}\\p{N}]+\\s+){")
+                            .append(wordCount)
+                            .append("})")
+                            .append("\\W*")
+                            .append(Pattern.quote(key1));
+                    break;
+                case "after":
+                    regexBuilder.append(Pattern.quote(key1))
+                            .append("\\W*")
+                            .append("((?:[\\p{L}\\p{N}]+\\s+){")
+                            .append(wordCount)
+                            .append("})");
+                    break;
+                case "between":
+                    regexBuilder.append(Pattern.quote(key1))
+                            .append("\\W*")
+                            .append("([\\p{L}\\p{N}\\s]+?)")
+                            .append("\\W*")
+                            .append(Pattern.quote(key2));
+                    break;
+            }
+        }
+
+        regexBuilder.append(".*");
+        return regexBuilder.toString();
+    }
+
 
     @Override
     public String toString() {

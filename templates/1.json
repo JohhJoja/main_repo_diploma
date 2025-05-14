@@ -1,0 +1,10 @@
+{
+  "name" : "1",
+  "type" : "text (txt)",
+  "description" : "1234",
+  "trigger" : [ "123" ],
+  "regex" : "(?si).*((?:[\\p{L}\\p{N}]+\\s+){3})\\W*\\Qqwe\\E((?:[\\p{L}\\p{N}]+\\s+){1})\\W*\\Qrty\\E\\Qqqq\\E\\W*([\\p{L}\\p{N}\\s]+?)\\W*\\Qqqq\\E.*",
+  "actionType" : "отчет",
+  "replacementValue" : null,
+  "reportStructure" : "123s4defrtgy"
+}
