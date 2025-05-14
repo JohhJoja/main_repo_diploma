@@ -18,6 +18,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
+import com.eliseew.dima.diploma.utils.TemplateJson;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+
 public class HelloApplication extends Application {
 
     private Label templateDescriptionLabel = new Label("Описание шаблона будет здесь...");
@@ -84,6 +89,8 @@ public class HelloApplication extends Application {
         root.setRight(parseBox);
 
         Scene scene = new Scene(root, 900, 600);
+
+
 
         //Открытие окна создания
         createButton.setOnAction(e -> {
@@ -153,6 +160,15 @@ public class HelloApplication extends Application {
             event.consume();
         });
 
+        loadTemplates(templateList);
+
+        templateList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                String description = getTemplateDescription(newVal);
+                templateDescriptionLabel.setText(description);
+            }
+        });
+
         primaryStage.setScene(scene);
         primaryStage.show();
     }
@@ -172,6 +188,41 @@ public class HelloApplication extends Application {
             }
         }
     }
+
+    private void loadTemplates(ListView<String> listView) {
+        File dir = new File("templates");
+        if (!dir.exists() || !dir.isDirectory()) return;
+
+        File[] files = dir.listFiles((d, name) -> name.toLowerCase().endsWith(".json"));
+        if (files == null) return;
+
+        listView.getItems().clear();
+        for (File file : files) {
+            String fileName = file.getName();
+            if (fileName.endsWith(".json")) {
+                listView.getItems().add(fileName.substring(0, fileName.length() - 5));
+            }
+        }
+    }
+
+    private String getTemplateDescription(String templateName) {
+        ObjectMapper mapper = new ObjectMapper();
+        File file = new File("templates", templateName + ".json");
+        if (!file.exists()) return "Описание не найдено";
+
+        try {
+            List<TemplateJson> templates = mapper.readValue(file, new TypeReference<List<TemplateJson>>() {});
+            if (!templates.isEmpty()) {
+                return templates.get(0).getDescription();
+            }
+        } catch (IOException e) {
+            return "Ошибка чтения шаблона: " + e.getMessage();
+        }
+
+        return "Описание отсутствует";
+    }
+
+
 
     public static void main(String[] args) {
         launch(args);

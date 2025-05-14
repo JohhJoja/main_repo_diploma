@@ -18,4 +18,11 @@ public class TemplateJson {
         this.replacementValue = replacementValue;
         this.reportStructure = reportStructure;
     }
+
+    public TemplateJson() {
+    }
+
+    public String getDescription() {
+        return description;
+    }
 }
