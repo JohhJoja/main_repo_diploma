@@ -1,8 +1,0 @@
-[ {
-  "description" : "ц43у567е8",
-  "trigger" : "(3ы45в6а7пнг)",
-  "regex" : "(?si).*((?:[\\p{L}\\p{N}]+\\s+){3})\\W*\\Q4уч5кс6ем7ни\\E((?:[\\p{L}\\p{N}]+\\s+){1})\\W*\\Qв46са7пниг\\E\\Qем7нигтшщ\\E\\W*([\\p{L}\\p{N}\\s]+?)\\W*\\Qв5а7п8рг\\E.*",
-  "actionType" : "report",
-  "replacementValue" : null,
-  "reportStructure" : "дом: k1\nхата: k2\nлошок: k3"
-} ]

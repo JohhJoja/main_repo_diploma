@@ -14,13 +14,22 @@ public class TextParser {
         for (TextPatternModel model : patterns) {
             Pattern triggerPattern = Pattern.compile(model.trigger, Pattern.DOTALL);
             Matcher triggerMatcher = triggerPattern.matcher(text);
+            System.out.println(model.trigger);
 
             if (triggerMatcher.find()) {
+                System.out.println("🔎 Найден триггер: " + model.trigger); // ← вывод 1
                 Pattern regexPattern = Pattern.compile(model.regex, Pattern.DOTALL);
                 Matcher m = regexPattern.matcher(text);
 
+                System.out.println(m+"matcher");
+
                 if (m.find()) {
                     Map<String, String> namedGroups = getNamedGroups(m);
+
+                    System.out.println("📌 Найденные группы и значения:"); // ← вывод 2
+                    for (Map.Entry<String, String> entry : namedGroups.entrySet()) {
+                        System.out.println("    " + entry.getKey() + " = " + entry.getValue());
+                    }
 
                     switch (model.actionType) {
                         case "report":

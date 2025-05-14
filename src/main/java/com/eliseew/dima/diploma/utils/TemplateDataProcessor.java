@@ -2,11 +2,10 @@ package com.eliseew.dima.diploma.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Pattern;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TemplateDataProcessor {
     String name, type, description, action, reportText;
@@ -31,16 +30,12 @@ public class TemplateDataProcessor {
     }
 
     private String generateWordPattern(int wordCount) {
-        if (wordCount <= 1) return "\\S+";
-        return "(\\S+\\s+){" + (wordCount - 1) + "}\\S+";
+        return wordCount <= 1 ? "\\S+" : "(?:\\S+\\s+){" + (wordCount - 1) + "}\\S+";
     }
 
     public void exportToJsonFile() {
-        // Генерация регулярного выражения
         String regex = generateRegex();
-
-        // Преобразуем trigger (список строк) в строку в формате "(k1|k2|k3)"
-        String triggerString = "(" + String.join("|", docIds) + ")";  // Используем | для соединения элементов
+        String triggerString = "(" + String.join("|", docIds) + ")";
 
         if ("отчет".equals(action)) {
             for (int i = 1; i <= keywords.size(); i++) {
@@ -48,30 +43,24 @@ public class TemplateDataProcessor {
             }
         }
 
-        // Создаем объект JSON для записи
         TemplateJson json = new TemplateJson(
-
                 description,
-                triggerString,  // Здесь заменяем список на строку
+                triggerString,
                 regex,
                 action,
                 "замена".equals(action) ? reportText : null,
-
                 "отчет".equals(action) ? reportText : null
         );
 
-        // Пишем в JSON файл
         ObjectMapper mapper = new ObjectMapper();
         try {
             File dir = new File("templates");
             if (!dir.exists()) dir.mkdir();
             File outFile = new File(dir, name + ".json");
 
-            // Оборачиваем в список
             List<TemplateJson> jsonList = new ArrayList<>();
             jsonList.add(json);
 
-            // Запись в файл
             mapper.writerWithDefaultPrettyPrinter().writeValue(outFile, jsonList);
             System.out.println("Шаблон сохранён в: " + outFile.getAbsolutePath());
         } catch (IOException e) {
@@ -80,38 +69,47 @@ public class TemplateDataProcessor {
     }
 
     public String generateRegex() {
-        StringBuilder regexBuilder = new StringBuilder("(?si).*");
+        StringBuilder regexBuilder = new StringBuilder("(?i)"); // флаг игнорирования регистра
         int groupIndex = 1;
 
-        for (KeywordEntry keyword : keywords) {
+        for (int i = 0; i < keywords.size(); i++) {
+            KeywordEntry keyword = keywords.get(i);
             String key1 = keyword.getKey1();
             String key2 = keyword.getKey2();
             int wordCount = keyword.getWordCount();
-            String groupName = "k" + groupIndex++;
+            String wordPattern = generateWordPattern(wordCount);
+
+            if (i > 0) {
+                // Добавим возможность наличия чего угодно между шаблонами (в разумных пределах)
+                regexBuilder.append(".*?");
+            }
 
             switch (keyword.getPosition()) {
-                case "before":
-                    regexBuilder.append("(?<").append(groupName).append(">")
-                            .append("(?:[\\p{L}\\p{N}]+\\s+){").append(wordCount).append("})")
-                            .append("\\W*").append(Pattern.quote(key1));
-                    break;
                 case "after":
-                    regexBuilder.append(Pattern.quote(key1))
-                            .append("\\W*")
-                            .append("(?<").append(groupName).append(">")
-                            .append("(?:[\\p{L}\\p{N}]+\\s+){").append(wordCount).append("})");
+                    regexBuilder
+                            .append("(?:\\Q").append(key1).append("\\E)[:\\s\\r\\n]*")
+                            .append("(?<k").append(groupIndex++).append(">") // именованная группа
+                            .append(wordPattern).append(")");
                     break;
+
+                case "before":
+                    regexBuilder
+                            .append("(?<k").append(groupIndex++).append(">") // именованная группа
+                            .append(wordPattern).append(")")
+                            .append("[:\\s\\r\\n]*")
+                            .append("(?:\\Q").append(key1).append("\\E)");
+                    break;
+
                 case "between":
-                    regexBuilder.append(Pattern.quote(key1))
-                            .append("\\W*")
-                            .append("(?<").append(groupName).append(">[\\p{L}\\p{N}\\s]+?)")
-                            .append("\\W*")
-                            .append(Pattern.quote(key2));
+                    regexBuilder
+                            .append("(?:\\Q").append(key1).append("\\E)[:\\s\\r\\n]*")
+                            .append("(?<k").append(groupIndex++).append(">[\\p{L}\\p{N}\\s]+?)")
+                            .append("[:\\s\\r\\n]*")
+                            .append("(?:\\Q").append(key2).append("\\E)");
                     break;
             }
         }
 
-        regexBuilder.append(".*");
         return regexBuilder.toString();
     }
 

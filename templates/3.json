@@ -1,8 +1,0 @@
-[ {
-  "description" : "zwexdcfvgbhnj",
-  "trigger" : "(exrctv|vygyvyh)",
-  "regex": "(?s).*имя:\\s*(?<k1>\\S+).*?фамилия:\\s*(?<k2>\\S+).*",
-  "actionType" : "replace",
-  "replacementValue" : "*********",
-  "reportStructure" : null
-} ]
