@@ -21,8 +21,6 @@ public class PatternLoader {
         for (File file : files) {
             System.out.println("Читаем файл: " + file.getName());
             List<TextPatternModel> patterns = null;
-//            System.out.println("Загружено шаблонов: " + patterns.size());
-
             try {
                 patterns = mapper.readValue(
                         file,

@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 public class TextParser {
     public static String parse(String text, File file) {
-        List<TextPatternModel> patterns = PatternLoader.loadAllPatterns("src/main/resources/com/eliseew/dima/diploma/patterns");
+        List<TextPatternModel> patterns = PatternLoader.loadAllPatterns("templates");
 
         for (TextPatternModel model : patterns) {
             Pattern triggerPattern = Pattern.compile(model.trigger, Pattern.DOTALL);
@@ -21,7 +21,7 @@ public class TextParser {
                 Pattern regexPattern = Pattern.compile(model.regex, Pattern.DOTALL);
                 Matcher m = regexPattern.matcher(text);
 
-                System.out.println(m+"matcher");
+//                System.out.println(m.find()+"matcher");
 
                 if (m.find()) {
                     Map<String, String> namedGroups = getNamedGroups(m);

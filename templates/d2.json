@@ -1,0 +1,8 @@
+[ {
+  "description" : "dimas",
+  "trigger" : "(Заявление2)",
+  "regex" : "(?i)(?:\\Qимя\\E)[:\\s\\r\\n]*(?<k1>\\S+)",
+  "actionType" : "report",
+  "replacementValue" : null,
+  "reportStructure" : "мое имя - {k1}"
+} ]

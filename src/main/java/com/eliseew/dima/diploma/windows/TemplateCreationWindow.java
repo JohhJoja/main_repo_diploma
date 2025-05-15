@@ -10,11 +10,23 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TemplateCreationWindow {
 
+    Map<String, String> positionMap = new HashMap<>();
+
+    public TemplateCreationWindow() {
+        positionMap.put("до", "before");
+        positionMap.put("после", "after");
+        positionMap.put("между", "between");
+    }
+
+
     public void show() {
+
         Stage window = new Stage();
         window.setTitle("Создание шаблона");
         window.initModality(Modality.APPLICATION_MODAL);
@@ -169,15 +181,15 @@ public class TemplateCreationWindow {
                     }
 
                     if (positionCombo != null && key1Field != null && !key1Field.getText().isEmpty()) {
-                        String position = positionCombo.getValue();
-                        if ("between".equals(position) && key2Field != null && !key2Field.getText().isEmpty()) {
+                        String selectedPosition = positionMap.get(positionCombo.getValue()); // Получаем "before"/"after"/"between"
+                        if ("between".equals(selectedPosition) && key2Field != null && !key2Field.getText().isEmpty()) {
                             // Обработка "between"
-                            keywords.add(new KeywordEntry(key1Field.getText(), key2Field.getText(), position));
+                            keywords.add(new KeywordEntry(key1Field.getText(), key2Field.getText(), selectedPosition));
                         } else {
                             // Обработка для "before" и "after"
                             int wordCount = wordCountField != null ? (int) wordCountField.getValue() : 1;
 
-                            keywords.add(new KeywordEntry(key1Field.getText(), position, wordCount));
+                            keywords.add(new KeywordEntry(key1Field.getText(), selectedPosition, wordCount));
                         }
                     }
                 }
@@ -204,6 +216,47 @@ public class TemplateCreationWindow {
             TemplateDataProcessor TDP = new TemplateDataProcessor(name, type, description, action, reportText, docIds, keywords);
         });
 
+        // Кнопка информации
+        Button infoButton = new Button("i");
+        infoButton.setStyle("-fx-font-size: 16px; -fx-background-radius: 50%; -fx-min-width: 30px; -fx-min-height: 30px;");
+        Tooltip tooltip = new Tooltip("Скачать инструкцию по применению");
+        Tooltip.install(infoButton, tooltip);
+
+// Действие при нажатии
+        infoButton.setOnAction(event -> {
+            try {
+                String sourcePath = "E:\\Java\\deeplomka\\intronet\\instruction\\Инструкция по созданию шаблонов.docx";
+                String downloadsPath = System.getProperty("user.home") + "/Downloads/Инструкция по созданию шаблонов.docx";
+
+                java.nio.file.Files.copy(
+                        java.nio.file.Paths.get(sourcePath),
+                        java.nio.file.Paths.get(downloadsPath),
+                        java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                );
+
+                // Открыть папку Downloads
+                java.awt.Desktop.getDesktop().open(new java.io.File(System.getProperty("user.home") + "/Downloads"));
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Ошибка");
+                alert.setHeaderText("Не удалось скачать инструкцию");
+                alert.setContentText("Проверьте путь к файлу и повторите попытку.");
+                alert.showAndWait();
+            }
+        });
+
+// Обертка для кнопок "Сохранить шаблон" и "i" на одном уровне
+        BorderPane bottomButtons = new BorderPane();
+        bottomButtons.setPadding(new Insets(10, 0, 0, 0));
+
+        bottomButtons.setLeft(saveButton);
+        bottomButtons.setRight(infoButton);
+
+        layout.getChildren().add(bottomButtons);
+
+
         Scene scene = new Scene(layout, 750, 700);
         window.setScene(scene);
         window.show();
@@ -216,8 +269,8 @@ public class TemplateCreationWindow {
         secondField.setVisible(false);
 
         ComboBox<String> positionCombo = new ComboBox<>();
-        positionCombo.getItems().addAll("before", "after", "between");
-        positionCombo.setValue("before");
+        positionCombo.getItems().addAll("до", "после", "между");
+        positionCombo.setValue("после");
 
         Label countLabel = new Label("Кол-во слов:");
         ComboBox<Integer> wordCountCombo = new ComboBox<>();
@@ -232,8 +285,10 @@ public class TemplateCreationWindow {
 
         // Обработка изменения позиции в ComboBox
         positionCombo.setOnAction(e -> {
-            String selected = positionCombo.getValue();
-            if ("between".equals(selected)) {
+            String selectedPosition = positionMap.get(positionCombo.getValue()); // Получаем "before"/"after"/"between"
+
+            System.out.println(selectedPosition);
+            if ("between".equals(selectedPosition)) {
                 if (!row.getChildren().contains(secondField)) {
                     row.getChildren().add(2, secondField);
                     secondField.setVisible(true);
@@ -253,6 +308,4 @@ public class TemplateCreationWindow {
 
         return row;
     }
-
-
 }

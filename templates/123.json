@@ -1,0 +1,8 @@
+[ {
+  "description" : "1",
+  "trigger" : "(1)",
+  "regex" : "(?i)",
+  "actionType" : "report",
+  "replacementValue" : null,
+  "reportStructure" : "12"
+} ]

@@ -7,6 +7,7 @@ module com.eliseew.dima.diploma {
     requires org.apache.poi.ooxml;
     requires com.fasterxml.jackson.core;
     requires com.fasterxml.jackson.databind;
+    requires java.desktop;
 
     opens com.eliseew.dima.diploma to javafx.fxml;
     exports com.eliseew.dima.diploma;

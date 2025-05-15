@@ -1,0 +1,8 @@
+[ {
+  "description" : "qwe rty",
+  "trigger" : "(1)",
+  "regex" : "(?i).*?.*?",
+  "actionType" : "report",
+  "replacementValue" : null,
+  "reportStructure" : "123"
+} ]

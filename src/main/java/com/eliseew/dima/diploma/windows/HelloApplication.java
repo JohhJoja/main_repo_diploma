@@ -222,8 +222,6 @@ public class HelloApplication extends Application {
         return "Описание отсутствует";
     }
 
-
-
     public static void main(String[] args) {
         launch(args);
     }
