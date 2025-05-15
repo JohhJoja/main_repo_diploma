@@ -195,25 +195,27 @@ public class TemplateCreationWindow {
                 }
             }
 
-            // Печать полученных данных
-            System.out.println("== Получены данные шаблона ===");
-            System.out.println("Название: " + name);
-            System.out.println("Тип: " + type);
-            System.out.println("Описание: " + description);
-            System.out.println("Идентификаторы документа:");
-            for (String docId : docIds) {
-                System.out.println("  - " + docId);
-            }
-            System.out.println("Действие: " + action);
-            System.out.println("Текст/Замена: " + reportText);
-            System.out.println("Ключевые слова:");
-            for (int i = 0; i < keywords.size(); i++) {
-                KeywordEntry keyword = keywords.get(i);
-                System.out.println("  k" + (i + 1) + ": " + keyword);
-            }
-            System.out.println("================================");
+            Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+            confirmAlert.setTitle("Общий доступ");
+            confirmAlert.setHeaderText("Сделать шаблон общедоступным?");
+            confirmAlert.setContentText("Если выбрать 'Нет', шаблон будет сохранён только локально.");
 
-            TemplateDataProcessor TDP = new TemplateDataProcessor(name, type, description, action, reportText, docIds, keywords);
+            ButtonType yesButton = new ButtonType("Да");
+            ButtonType noButton = new ButtonType("Нет");
+            ButtonType cancelButton = new ButtonType("Отмена", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+            confirmAlert.getButtonTypes().setAll(yesButton, noButton, cancelButton);
+
+            confirmAlert.showAndWait().ifPresent(response -> {
+                if (response == yesButton || response == noButton) {
+                    Boolean isLocal = !(response == yesButton);
+                    TemplateDataProcessor TDP = new TemplateDataProcessor(name, type, description, action, reportText, docIds, keywords, isLocal);
+
+                } else {
+                    System.out.println("Сохранение отменено.");
+                }
+            });
+
         });
 
         // Кнопка информации

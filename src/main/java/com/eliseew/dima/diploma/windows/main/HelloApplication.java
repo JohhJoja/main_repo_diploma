@@ -1,7 +1,9 @@
-package com.eliseew.dima.diploma.windows;
+package com.eliseew.dima.diploma.windows.main;
 
 import com.eliseew.dima.diploma.FileHandler;
+import com.eliseew.dima.diploma.windows.TemplateCreationWindow;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -36,12 +38,14 @@ public class HelloApplication extends Application {
         // Меню
         MenuBar menuBar = new MenuBar();
         Menu fileMenu = new Menu("Файл");
-        MenuItem openFileItem = new MenuItem("Открыть файл");
-        MenuItem saveResultItem = new MenuItem("Сохранить результат");
+        //MenuItem openFileItem = new MenuItem("Открыть файл");
+        //MenuItem saveResultItem = new MenuItem("Сохранить результат");
         MenuItem importTemplateItem = new MenuItem("Импорт шаблона");
         MenuItem exportTemplateItem = new MenuItem("Экспорт шаблона");
         MenuItem exitItem = new MenuItem("Выход");
-        fileMenu.getItems().addAll(openFileItem, saveResultItem, new SeparatorMenuItem(), importTemplateItem, exportTemplateItem, new SeparatorMenuItem(), exitItem);
+        fileMenu.getItems().addAll(
+               // openFileItem, saveResultItem,
+                new SeparatorMenuItem(), importTemplateItem, exportTemplateItem, new SeparatorMenuItem(), exitItem);
 
         Menu helpMenu = new Menu("Помощь");
         MenuItem aboutItem = new MenuItem("О программе");
@@ -78,6 +82,74 @@ public class HelloApplication extends Application {
         TextArea resultArea = new TextArea();
         resultArea.setPromptText("Результаты будут здесь...");
         resultArea.setPrefHeight(300);
+
+        importTemplateItem.setOnAction(e -> {
+            File destinationDir = new File("E:\\Java\\deeplomka\\intronet\\patterns");
+            if (!destinationDir.exists()) {
+                destinationDir.mkdirs();
+            }
+
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Выберите шаблоны для импорта");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON файлы", "*.json"));
+            fileChooser.setInitialDirectory(destinationDir); // Устанавливаем нужную папку
+
+            List<File> filesToImport = fileChooser.showOpenMultipleDialog(null);
+
+            if (filesToImport != null && !filesToImport.isEmpty()) {
+                for (File file : filesToImport) {
+                    File destFile = new File(destinationDir, file.getName());
+                    try {
+                        java.nio.file.Files.copy(file.toPath(), destFile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
+
+
+        exportTemplateItem.setOnAction(e -> {
+            File sourceDir = new File("templates");
+            if (!sourceDir.exists()) {
+                sourceDir.mkdirs();
+            }
+
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Выберите шаблоны для экспорта");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON файлы", "*.json"));
+            fileChooser.setInitialDirectory(sourceDir);
+            List<File> filesToExport = fileChooser.showOpenMultipleDialog(null);
+
+            if (filesToExport != null && !filesToExport.isEmpty()) {
+                File exportTargetDir = new File("E:\\Java\\deeplomka\\intronet\\patterns");
+                if (!exportTargetDir.exists()) {
+                    exportTargetDir.mkdirs();
+                }
+
+                for (File file : filesToExport) {
+                    File destFile = new File(exportTargetDir, file.getName());
+                    try {
+                        java.nio.file.Files.copy(file.toPath(), destFile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        aboutItem.setOnAction(e -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("О программе");
+            alert.setHeaderText("Система обработки шаблонов");
+            alert.setContentText("заглушка");
+            alert.showAndWait();
+        });
+
+
+        exitItem.setOnAction(e -> {
+            Platform.exit();
+        });
 
         parseBox.getChildren().addAll(loadButton, new Label("Выберите шаблон и нажмите 'Применить шаблон'"), parseButton, resultArea);
 

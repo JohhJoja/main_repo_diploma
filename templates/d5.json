@@ -1,0 +1,8 @@
+[ {
+  "description" : "b",
+  "trigger" : "(k)",
+  "regex" : "(?i)(?:\\Qk\\E)[:\\s\\r\\n]*(?<k1>\\S+)",
+  "actionType" : "report",
+  "replacementValue" : null,
+  "reportStructure" : "k k"
+} ]

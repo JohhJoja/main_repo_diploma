@@ -11,8 +11,9 @@ public class TemplateDataProcessor {
     String name, type, description, action, reportText;
     List<String> docIds;
     List<KeywordEntry> keywords;
+    Boolean isLocal;
 
-    public TemplateDataProcessor(String name, String type, String description, String action, String reportText, List<String> docIds, List<KeywordEntry> keywords) {
+    public TemplateDataProcessor(String name, String type, String description, String action, String reportText, List<String> docIds, List<KeywordEntry> keywords, Boolean isLocal) {
         this.name = name;
         this.type = type;
         this.description = description;
@@ -20,6 +21,7 @@ public class TemplateDataProcessor {
         this.reportText = reportText;
         this.docIds = docIds;
         this.keywords = keywords;
+        this.isLocal = isLocal;
         process();
     }
 
@@ -54,18 +56,35 @@ public class TemplateDataProcessor {
 
         ObjectMapper mapper = new ObjectMapper();
         try {
-            File dir = new File("templates");
-            if (!dir.exists()) dir.mkdir();
-            File outFile = new File(dir, name + ".json");
+            File dir1 = new File("templates");
+            File dir2 = new File("E:\\Java\\deeplomka\\intronet\\patterns");
 
+            // Создаём первую директорию при необходимости
+            if (!dir1.exists()) dir1.mkdir();
+
+            // Если не локально — создаём и вторую директорию
+            if (!isLocal && !dir2.exists()) dir2.mkdir();
+
+            // Подготовка списка шаблонов
             List<TemplateJson> jsonList = new ArrayList<>();
             jsonList.add(json);
 
-            mapper.writerWithDefaultPrettyPrinter().writeValue(outFile, jsonList);
-            System.out.println("Шаблон сохранён в: " + outFile.getAbsolutePath());
+            // Сохраняем в первую директорию
+            File outFile1 = new File(dir1, name + ".json");
+            mapper.writerWithDefaultPrettyPrinter().writeValue(outFile1, jsonList);
+            System.out.println("Шаблон сохранён в: " + outFile1.getAbsolutePath());
+
+            // Если не локально — сохраняем и во вторую директорию
+            if (!isLocal) {
+                File outFile2 = new File(dir2, name + ".json");
+                mapper.writerWithDefaultPrettyPrinter().writeValue(outFile2, jsonList);
+                System.out.println("Шаблон также сохранён в: " + outFile2.getAbsolutePath());
+            }
+
         } catch (IOException e) {
             System.err.println("Ошибка при сохранении JSON: " + e.getMessage());
         }
+
     }
 
     public String generateRegex() {

@@ -9,9 +9,9 @@ import java.util.regex.Pattern;
 
 public class TextParser {
     public static String parse(String text, File file) {
-        List<TextPatternModel> patterns = PatternLoader.loadAllPatterns("templates");
+        List<PatternModel> patterns = PatternLoader.loadAllPatterns("templates");
 
-        for (TextPatternModel model : patterns) {
+        for (PatternModel model : patterns) {
             Pattern triggerPattern = Pattern.compile(model.trigger, Pattern.DOTALL);
             Matcher triggerMatcher = triggerPattern.matcher(text);
             System.out.println(model.trigger);
@@ -20,8 +20,6 @@ public class TextParser {
                 System.out.println("🔎 Найден триггер: " + model.trigger); // ← вывод 1
                 Pattern regexPattern = Pattern.compile(model.regex, Pattern.DOTALL);
                 Matcher m = regexPattern.matcher(text);
-
-//                System.out.println(m.find()+"matcher");
 
                 if (m.find()) {
                     Map<String, String> namedGroups = getNamedGroups(m);

@@ -9,8 +9,8 @@ import java.util.*;
 
 public class PatternLoader {
 
-    public static List<TextPatternModel> loadAllPatterns(String folderPath) {
-        List<TextPatternModel> allPatterns = new ArrayList<>();
+    public static List<PatternModel> loadAllPatterns(String folderPath) {
+        List<PatternModel> allPatterns = new ArrayList<>();
         ObjectMapper mapper = new ObjectMapper();
 
         File folder = new File(folderPath);
@@ -20,11 +20,11 @@ public class PatternLoader {
 
         for (File file : files) {
             System.out.println("Читаем файл: " + file.getName());
-            List<TextPatternModel> patterns = null;
+            List<PatternModel> patterns = null;
             try {
                 patterns = mapper.readValue(
                         file,
-                        new TypeReference<List<TextPatternModel>>() {
+                        new TypeReference<List<PatternModel>>() {
                         }
                 );
                 allPatterns.addAll(patterns);
