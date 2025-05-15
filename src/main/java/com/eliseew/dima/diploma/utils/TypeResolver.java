@@ -10,6 +10,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 
 import java.io.*;
 import java.nio.charset.MalformedInputException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
@@ -21,7 +22,7 @@ public class TypeResolver {
         if (fileName.endsWith(".txt") || fileName.endsWith(".csv") || fileName.endsWith(".xml")) {
             String content;
             try {
-                content = Files.readString(file.toPath());
+                content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
             } catch (MalformedInputException e) {
               //  System.out.println("Не удалось прочитать файл. Пробую показать байты:");
                 byte[] raw = Files.readAllBytes(file.toPath());

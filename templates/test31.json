@@ -1,0 +1,8 @@
+[ {
+  "description" : "wot w chem delo",
+  "trigger" : "(Zayavka3)",
+  "regex" : "(?i)(?:\\QDoM\\E)[:\\s\\r\\n]*(?<k1>\\S+).*?(?:\\QKVARTIra\\E)[:\\s\\r\\n]*(?<k2>\\S+)",
+  "actionType" : "replace",
+  "replacementValue" : null,
+  "reportStructure" : "dom - {k1}, kvartira - {k2}"
+} ]

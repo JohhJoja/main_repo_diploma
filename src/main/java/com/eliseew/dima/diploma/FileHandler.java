@@ -42,7 +42,7 @@ public class FileHandler {
         System.out.println("-----------------------------------");
     }
 
-    private String parseByType(String type, String text, File file, String selectedTemplateName) {
+    private String parseByType(String type, String text, File file, String selectedTemplateName) throws IOException {
         switch (type) {
             case "doc":
                 return TextParser.parse(text, file, selectedTemplateName);

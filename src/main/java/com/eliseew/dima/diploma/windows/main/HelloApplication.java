@@ -36,6 +36,8 @@ public class HelloApplication extends Application {
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Парсер шаблонов");
 
+
+
         // Меню
         MenuBar menuBar = new MenuBar();
         Menu fileMenu = new Menu("Файл");

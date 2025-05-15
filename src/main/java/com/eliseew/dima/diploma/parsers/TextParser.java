@@ -1,30 +1,42 @@
 package com.eliseew.dima.diploma.parsers;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class TextParser {
     //String selectedTemplateName = null;
-    public static String parse(String text, File file, String selectedTemplateName) {
+    public static String parse(String text, File file, String selectedTemplateName) throws IOException {
 //        this.selectedTemplateName = selectedTemplateName;
         System.out.println(selectedTemplateName);
+       // System.out.println("Текст в виде кодов: " + text.codePoints().mapToObj(c -> (int)c).collect(Collectors.toList()));
+//        String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+//        System.out.println(content);
+
+
         List<PatternModel> patterns = PatternLoader.loadAllPatterns("templates", selectedTemplateName);
 
         for (PatternModel model : patterns) {
-            Pattern triggerPattern = Pattern.compile(model.trigger, Pattern.DOTALL);
+            Pattern triggerPattern = Pattern.compile(model.trigger, Pattern.CASE_INSENSITIVE);
             Matcher triggerMatcher = triggerPattern.matcher(text);
             System.out.println(model.trigger);
+            System.out.println("Используемый regex: " + model.regex);
+
+
 
             if (triggerMatcher.find()) {
                 System.out.println("🔎 Найден триггер: " + model.trigger); // ← вывод 1
-                Pattern regexPattern = Pattern.compile(model.regex, Pattern.DOTALL);
+                Pattern regexPattern = Pattern.compile(model.regex, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
                 Matcher m = regexPattern.matcher(text);
 
-
+                System.out.println(m + " эмочка");
                 if (m.find()) {
                     System.out.println("Yes");
                     Map<String, String> namedGroups = getNamedGroups(m);
