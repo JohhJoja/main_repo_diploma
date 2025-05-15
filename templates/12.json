@@ -1,8 +1,0 @@
-[ {
-  "description" : "q",
-  "trigger" : "(q)",
-  "regex" : "(?i)(?:\\Qq\\E)[:\\s\\r\\n]*(?<k1>\\S+).*?(?:\\Qw\\E)[:\\s\\r\\n]*(?<k2>\\S+).*?(?:\\Qe\\E)[:\\s\\r\\n]*(?<k3>\\S+)",
-  "actionType" : "report",
-  "replacementValue" : null,
-  "reportStructure" : "12"
-} ]

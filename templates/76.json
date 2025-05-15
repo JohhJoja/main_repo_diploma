@@ -1,8 +1,0 @@
-[ {
-  "description" : "qw",
-  "trigger" : "(wq)",
-  "regex" : "(?i).*?",
-  "actionType" : "report",
-  "replacementValue" : null,
-  "reportStructure" : "q"
-} ]

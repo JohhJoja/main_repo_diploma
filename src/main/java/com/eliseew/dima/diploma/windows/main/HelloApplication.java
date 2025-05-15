@@ -30,6 +30,7 @@ public class HelloApplication extends Application {
     private Label templateDescriptionLabel = new Label("Описание шаблона будет здесь...");
     private List<File> selectedFiles;
     private FileHandler handler;
+    private String selectedTemplateName = null;
 
     @Override
     public void start(Stage primaryStage) {
@@ -59,9 +60,12 @@ public class HelloApplication extends Application {
 
         Button createButton = new Button("Создать");
         Button deleteButton = new Button("Удалить");
-        Button editButton = new Button("Редактировать");
+       // Button editButton = new Button("Редактировать");
+        Button clearSelectionButton = new Button("Отменить выбор");
 
-        VBox templateBox = new VBox(10, new Label("Список шаблонов:"), templateList, createButton, deleteButton, editButton);
+        VBox templateBox = new VBox(10, new Label("Список шаблонов:"), templateList, createButton, deleteButton,
+               // editButton,
+                clearSelectionButton);
         templateBox.setPadding(new Insets(10));
         templateBox.setPrefWidth(180);
         templateBox.setStyle("-fx-background-color: #e6f4ec;");
@@ -162,7 +166,11 @@ public class HelloApplication extends Application {
 
         Scene scene = new Scene(root, 900, 600);
 
-
+        clearSelectionButton.setOnAction(e -> {
+            templateList.getSelectionModel().clearSelection();
+            selectedTemplateName = null;
+            templateDescriptionLabel.setText("Описание шаблона будет здесь...");
+        });
 
         //Открытие окна создания
         createButton.setOnAction(e -> {
@@ -192,7 +200,8 @@ public class HelloApplication extends Application {
 
                 for (File file : selectedFiles) {
                     try {
-                        handler = new FileHandler(file);
+                        System.out.println(selectedTemplateName +"  2");
+                        handler = new FileHandler(file, selectedTemplateName);
                         handler.handle();
                         String parsedData = handler.getParsedData();  // Здесь ты получаешь реальный результат парсинга
                         resultBuilder.append(parsedData).append("\n\n");
@@ -236,6 +245,8 @@ public class HelloApplication extends Application {
 
         templateList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
+                selectedTemplateName = newVal;
+                System.out.println(newVal);
                 String description = getTemplateDescription(newVal);
                 templateDescriptionLabel.setText(description);
             }

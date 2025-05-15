@@ -8,8 +8,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class TextParser {
-    public static String parse(String text, File file) {
-        List<PatternModel> patterns = PatternLoader.loadAllPatterns("templates");
+    //String selectedTemplateName = null;
+    public static String parse(String text, File file, String selectedTemplateName) {
+//        this.selectedTemplateName = selectedTemplateName;
+        System.out.println(selectedTemplateName);
+        List<PatternModel> patterns = PatternLoader.loadAllPatterns("templates", selectedTemplateName);
 
         for (PatternModel model : patterns) {
             Pattern triggerPattern = Pattern.compile(model.trigger, Pattern.DOTALL);
@@ -21,7 +24,9 @@ public class TextParser {
                 Pattern regexPattern = Pattern.compile(model.regex, Pattern.DOTALL);
                 Matcher m = regexPattern.matcher(text);
 
+
                 if (m.find()) {
+                    System.out.println("Yes");
                     Map<String, String> namedGroups = getNamedGroups(m);
 
                     System.out.println("📌 Найденные группы и значения:"); // ← вывод 2
@@ -78,4 +83,5 @@ public class TextParser {
 
         return namedGroups;
     }
+
 }

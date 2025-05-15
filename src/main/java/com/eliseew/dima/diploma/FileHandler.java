@@ -16,9 +16,11 @@ public class FileHandler {
     private String text;
     private String result;
     private final File file;
+    private String selectedTemplateName = null;
 
-    public FileHandler(File file) {
+    public FileHandler(File file, String selectedTemplateName) {
         this.file = file;
+        this.selectedTemplateName = selectedTemplateName;
     }
 
     public void handle() throws IOException {
@@ -30,7 +32,9 @@ public class FileHandler {
         type = typeAndText.get(0);
         text = typeAndText.get(1);
 
-        result = parseByType(type, text, file);
+
+        System.out.println(selectedTemplateName+"   3");
+        result = parseByType(type, text, file, selectedTemplateName);
 
         System.out.println("Файл: " + file.getName());
         System.out.println("Тип: " + type);
@@ -38,10 +42,10 @@ public class FileHandler {
         System.out.println("-----------------------------------");
     }
 
-    private String parseByType(String type, String text, File file) {
+    private String parseByType(String type, String text, File file, String selectedTemplateName) {
         switch (type) {
             case "doc":
-                return TextParser.parse(text, file);
+                return TextParser.parse(text, file, selectedTemplateName);
             case "xml":
                 return XMLParser.parse(text, file);
             case "xls":
