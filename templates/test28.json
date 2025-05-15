@@ -1,9 +1,0 @@
-[ {
-  "description" : "sef",
-  "trigger" : "(Test11111)",
-  "regex" : "(?i)(?-i:\\Qимя\\E)[:\\s\\r\\n]*(?<k1>\\S+)",
-  "actionType" : "report",
-  "replacementValue" : null,
-  "reportStructure" : "{k1}"
-} ]
-

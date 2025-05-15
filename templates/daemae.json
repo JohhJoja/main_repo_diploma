@@ -1,0 +1,8 @@
+[ {
+  "description" : "opyiat i tut",
+  "trigger" : "(Заявление на каникулы  f f f f)",
+  "regex" : "(?i)(?:\\QИмЯ\\E)[:\\s\\r\\n]*(?<k1>\\S+).*?(?:\\QФаМилИя\\E)[:\\s\\r\\n]*(?<k2>\\S+).*?(?:\\Q!типа!\\E)[:\\s\\r\\n]*(?<k3>[\\p{L}\\p{N}\\s]+?)[:\\s\\r\\n]*(?:\\Q!лол!\\E)",
+  "actionType" : "report",
+  "replacementValue" : null,
+  "reportStructure" : "я задолбался уже, {k1}, может заработаешь, {k2}? Ну а ващета я типа {k3}"
+} ]

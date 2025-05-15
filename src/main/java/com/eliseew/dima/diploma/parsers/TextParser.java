@@ -24,7 +24,7 @@ public class TextParser {
         List<PatternModel> patterns = PatternLoader.loadAllPatterns("templates", selectedTemplateName);
 
         for (PatternModel model : patterns) {
-            Pattern triggerPattern = Pattern.compile(model.trigger, Pattern.CASE_INSENSITIVE);
+            Pattern triggerPattern = Pattern.compile(model.trigger, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
             Matcher triggerMatcher = triggerPattern.matcher(text);
             System.out.println(model.trigger);
             System.out.println("Используемый regex: " + model.regex);
@@ -33,7 +33,7 @@ public class TextParser {
 
             if (triggerMatcher.find()) {
                 System.out.println("🔎 Найден триггер: " + model.trigger); // ← вывод 1
-                Pattern regexPattern = Pattern.compile(model.regex, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+                Pattern regexPattern = Pattern.compile(model.regex, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL);
                 Matcher m = regexPattern.matcher(text);
 
                 System.out.println(m + " эмочка");

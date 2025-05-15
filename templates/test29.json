@@ -1,8 +1,0 @@
-[ {
-  "description" : "234234324",
-  "trigger" : "(Test11111)",
-  "regex": "(?i)ИМя\\s*:\\s*(?<k1>.+)",
-  "actionType": "report",
-  "replacementValue" : null,
-  "reportStructure" : "{k1}"
-} ]

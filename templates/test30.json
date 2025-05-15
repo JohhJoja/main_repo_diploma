@@ -1,8 +1,0 @@
-[ {
-  "description" : "qwe",
-  "trigger" : "(Заявление2)",
-  "regex" : "(?i)(?:\\QИМЯ\\E)[:\\s\\r\\n]*(?<k1>\\S+).*?(?:\\Qфамилия\\E)[:\\s\\r\\n]*(?<k2>\\S+).*?(?:\\QОчКо\\E)[:\\s\\r\\n]*(?<k3>\\S+)",
-  "actionType" : "report",
-  "replacementValue" : null,
-  "reportStructure" : "{k1}   {k2} {k3}"
-} ]

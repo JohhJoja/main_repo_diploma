@@ -1,8 +1,0 @@
-[ {
-  "description" : "qwert",
-  "trigger" : "(Заявление на каникулы)",
-  "regex" : "(?i)(?:\\Qимя\\E)[:\\s\\r\\n]*(?<k1>\\S+).*?(?:\\Qфамилия\\E)[:\\s\\r\\n]*(?<k2>\\S+)",
-  "actionType" : "report",
-  "replacementValue" : null,
-  "reportStructure" : "{k1} - вот мое имя, {k2} - фамилия"
-} ]
