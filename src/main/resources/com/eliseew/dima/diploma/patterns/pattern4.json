@@ -1,9 +1,0 @@
-[
-  {
-    "trigger": "(Заявка4|Заявление4)",
-    "regex": "(?is).*имя:\\s*(\\S+).*?фамилия:\\s*(\\S+).*",
-    "actionType": "replace",
-    "replacementValue": "[ЗАМЕНЕНО]",
-    "reportStructure": ""
-  }
-]

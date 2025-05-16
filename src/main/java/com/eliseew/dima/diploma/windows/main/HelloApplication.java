@@ -1,6 +1,6 @@
 package com.eliseew.dima.diploma.windows.main;
 
-import com.eliseew.dima.diploma.FileHandler;
+import com.eliseew.dima.diploma.utils.FileHandler;
 import com.eliseew.dima.diploma.windows.TemplateCreationWindow;
 import javafx.application.Application;
 import javafx.application.Platform;

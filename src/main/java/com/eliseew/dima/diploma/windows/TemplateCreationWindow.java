@@ -37,8 +37,8 @@ public class TemplateCreationWindow {
 
         Label typeLabel = new Label("Тип документа:");
         ComboBox<String> typeCombo = new ComboBox<>();
-        typeCombo.getItems().addAll("text (txt)", "word", "excel", "gz");
-        typeCombo.setValue("text (txt)");
+        typeCombo.getItems().addAll("text", "excel", "gz");
+        typeCombo.setValue("text");
 
         Label nameLabel = new Label("Название шаблона (латиница):");
         TextField nameField = new TextField();

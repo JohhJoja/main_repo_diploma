@@ -1,7 +1,6 @@
-package com.eliseew.dima.diploma;
+package com.eliseew.dima.diploma.utils;
 
 import com.eliseew.dima.diploma.parsers.*;
-import com.eliseew.dima.diploma.utils.TypeResolver;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,7 +9,6 @@ import java.util.List;
 public class FileHandler {
 
     private String type;
-    private String text;
     private String result;
     private final File file;
     private String selectedTemplateName = null;
@@ -27,7 +25,7 @@ public class FileHandler {
         }
 
         type = typeAndText.get(0);
-        text = typeAndText.get(1);
+        String text = typeAndText.get(1);
 
         result = parseByType(type, text, file, selectedTemplateName);
 
@@ -38,20 +36,14 @@ public class FileHandler {
     }
 
     private String parseByType(String type, String text, File file, String selectedTemplateName) throws IOException {
-        switch (type) {
-            case "doc":
-                return TextParser.parse(text, file, selectedTemplateName);
-            case "xml":
-                return XMLParser.parse(text, file, selectedTemplateName);
-            case "xls":
-                return XLSParser.parse(text, file, selectedTemplateName);
-            case "xlsx":
-                return XLSXParser.parse(text, file, selectedTemplateName);
-            case "gz":
-                return GZParser.parse(text, file, selectedTemplateName);
-            default:
-                return "Формат не поддерживается: " + type;
-        }
+        return switch (type) {
+            case "doc" -> TextParser.parse(text, file, selectedTemplateName);
+            case "xml" -> XMLParser.parse(text, file, selectedTemplateName);
+            case "xls" -> XLSParser.parse(text, file, selectedTemplateName);
+            case "xlsx" -> XLSXParser.parse(text, file, selectedTemplateName);
+            case "gz" -> GZParser.parse(text, file, selectedTemplateName);
+            default -> "Формат не поддерживается: " + type;
+        };
     }
 
     public String getType() {
