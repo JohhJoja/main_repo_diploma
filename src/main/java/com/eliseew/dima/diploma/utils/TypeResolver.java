@@ -31,7 +31,7 @@ public class TypeResolver {
                 }
                 throw e;
             }
-            return List.of("text", content);
+            return List.of("doc", content);
         }
 
         if (fileName.endsWith(".docx")) {
@@ -53,14 +53,14 @@ public class TypeResolver {
         if (fileName.endsWith(".xlsx")) {
             try (FileInputStream fis = new FileInputStream(file);
                  Workbook workbook = new XSSFWorkbook(fis)) {
-                return List.of("excel", extractExcelText(workbook));
+                return List.of("xlsx", extractExcelText(workbook));
             }
         }
 
         if (fileName.endsWith(".xls")) {
             try (FileInputStream fis = new FileInputStream(file);
                  Workbook workbook = new HSSFWorkbook(fis)) {
-                return List.of("excel", extractExcelText(workbook));
+                return List.of("xls", extractExcelText(workbook));
             }
         }
 

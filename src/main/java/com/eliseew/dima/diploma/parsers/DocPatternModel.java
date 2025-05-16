@@ -1,6 +1,6 @@
 package com.eliseew.dima.diploma.parsers;
 
-public class PatternModel {
+public class DocPatternModel {
     public String description;
     public String trigger;
     public String regex;

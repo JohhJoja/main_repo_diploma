@@ -5,55 +5,52 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PatternLoader {
+    private static final ObjectMapper mapper = new ObjectMapper();
 
-    public static List<PatternModel> loadAllPatterns(String folderPath, String selectedTemplateName) {
-        List<PatternModel> allPatterns = new ArrayList<>();
-        ObjectMapper mapper = new ObjectMapper();
+    public static List<DocPatternModel> loadDocPatterns(String basePath, String templateName) {
+        return loadPatterns(basePath + "/doc", templateName, new TypeReference<>() {});
+    }
 
-        File folder = new File(folderPath);
+    public static List<ExcelPatternModel> loadExcelPatterns(String basePath, String templateName) {
+        return loadPatterns(basePath + "/excel", templateName, new TypeReference<>() {});
+    }
 
-        if (selectedTemplateName != null) {
-            File selectedFile = new File(folder, selectedTemplateName + ".json");
-            if (selectedFile.exists()) {
-                System.out.println("📄 Читаем файл шаблона: " + selectedFile.getName());
-                try {
-                    List<PatternModel> patterns = mapper.readValue(
-                            selectedFile,
-                            new TypeReference<List<PatternModel>>() {}
-                    );
-                    allPatterns.addAll(patterns);
-                    if (patterns !=null){
-                        System.out.println("YES!!!!");
-                    }
-                } catch (IOException e) {
-                    System.out.println("❌ Ошибка чтения файла " + selectedFile.getName());
-                    e.printStackTrace();
-                }
-            } else {
-                System.out.println("⚠️ Файл шаблона не найден: " + selectedFile.getName());
+    private static <T> List<T> loadPatterns(String fullPath, String templateName, TypeReference<List<T>> typeRef) {
+        try {
+            File folder = new File(fullPath);
+            if (!folder.exists()) {
+                System.err.println("Папка не существует: " + folder.getAbsolutePath());
+                return new ArrayList<>();
             }
-        } else {
+
+            if (templateName != null) {
+                File file = new File(folder, templateName + ".json");
+                if (file.exists()) {
+                    return mapper.readValue(file, typeRef);
+                }
+                System.err.println("Файл шаблона не найден: " + file.getAbsolutePath());
+                return new ArrayList<>();
+            }
+
+            List<T> allPatterns = new ArrayList<>();
             File[] files = folder.listFiles((dir, name) -> name.endsWith(".json"));
-            if (files == null) return allPatterns;
-
-            for (File file : files) {
-                System.out.println("📄 Читаем файл шаблона: " + file.getName());
-                try {
-                    List<PatternModel> patterns = mapper.readValue(
-                            file,
-                            new TypeReference<List<PatternModel>>() {}
-                    );
-                    allPatterns.addAll(patterns);
-                } catch (IOException e) {
-                    System.out.println("❌ Ошибка чтения файла " + file.getName());
-                    e.printStackTrace();
+            if (files != null) {
+                for (File file : files) {
+                    try {
+                        allPatterns.addAll(mapper.readValue(file, typeRef));
+                    } catch (IOException e) {
+                        System.err.println("Ошибка чтения файла " + file.getName() + ": " + e.getMessage());
+                    }
                 }
             }
+            return allPatterns;
+        } catch (Exception e) {
+            System.err.println("Критическая ошибка при загрузке шаблонов: " + e.getMessage());
+            return new ArrayList<>();
         }
-
-        return allPatterns;
     }
 }

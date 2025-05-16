@@ -1,9 +1,6 @@
 package com.eliseew.dima.diploma;
 
-import com.eliseew.dima.diploma.parsers.GZParser;
-import com.eliseew.dima.diploma.parsers.TextParser;
-import com.eliseew.dima.diploma.parsers.XLSParser;
-import com.eliseew.dima.diploma.parsers.XMLParser;
+import com.eliseew.dima.diploma.parsers.*;
 import com.eliseew.dima.diploma.utils.TypeResolver;
 
 import java.io.File;
@@ -18,7 +15,7 @@ public class FileHandler {
     private final File file;
     private String selectedTemplateName = null;
 
-    public FileHandler(File file, String selectedTemplateName) {
+    public FileHandler(File file, String selectedTemplateName, String selectedTemplateType) {
         this.file = file;
         this.selectedTemplateName = selectedTemplateName;
     }
@@ -32,8 +29,6 @@ public class FileHandler {
         type = typeAndText.get(0);
         text = typeAndText.get(1);
 
-
-        System.out.println(selectedTemplateName+"   3");
         result = parseByType(type, text, file, selectedTemplateName);
 
         System.out.println("Файл: " + file.getName());
@@ -47,11 +42,13 @@ public class FileHandler {
             case "doc":
                 return TextParser.parse(text, file, selectedTemplateName);
             case "xml":
-                return XMLParser.parse(text, file);
+                return XMLParser.parse(text, file, selectedTemplateName);
             case "xls":
-                return XLSParser.parse(text, file);
+                return XLSParser.parse(text, file, selectedTemplateName);
+            case "xlsx":
+                return XLSXParser.parse(text, file, selectedTemplateName);
             case "gz":
-                return GZParser.parse(text, file);
+                return GZParser.parse(text, file, selectedTemplateName);
             default:
                 return "Формат не поддерживается: " + type;
         }

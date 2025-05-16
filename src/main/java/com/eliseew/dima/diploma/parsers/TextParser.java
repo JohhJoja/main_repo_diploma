@@ -2,75 +2,53 @@ package com.eliseew.dima.diploma.parsers;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class TextParser {
-    //String selectedTemplateName = null;
+
     public static String parse(String text, File file, String selectedTemplateName) throws IOException {
-//        this.selectedTemplateName = selectedTemplateName;
-        System.out.println(selectedTemplateName);
-       // System.out.println("Текст в виде кодов: " + text.codePoints().mapToObj(c -> (int)c).collect(Collectors.toList()));
-//        String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
-//        System.out.println(content);
+        Objects.requireNonNull(text, "Текст не может быть null");
+        System.out.println("Выбран шаблон: " + selectedTemplateName);
 
+        // Загружаем только DOC шаблоны из папки templates/doc
+        List<DocPatternModel> patterns = PatternLoader.loadDocPatterns("templates", selectedTemplateName);
 
-        List<PatternModel> patterns = PatternLoader.loadAllPatterns("templates", selectedTemplateName);
+        if (patterns.isEmpty()) {
+            return "Не найдено подходящих шаблонов для документа";
+        }
 
-        for (PatternModel model : patterns) {
+        for (DocPatternModel model : patterns) {
+            System.out.println("Обрабатываем шаблон: " + model.description);
+            System.out.println("Триггер: " + model.trigger);
+            System.out.println("Regex: " + model.regex);
+
             Pattern triggerPattern = Pattern.compile(model.trigger, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
             Matcher triggerMatcher = triggerPattern.matcher(text);
-            System.out.println(model.trigger);
-            System.out.println("Используемый regex: " + model.regex);
-
-
 
             if (triggerMatcher.find()) {
-                System.out.println("🔎 Найден триггер: " + model.trigger); // ← вывод 1
-                Pattern regexPattern = Pattern.compile(model.regex, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL);
+                System.out.println("🔎 Найден триггер: " + model.trigger);
+                Pattern regexPattern = Pattern.compile(model.regex,
+                        Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL);
                 Matcher m = regexPattern.matcher(text);
 
-                System.out.println(m + " эмочка");
                 if (m.find()) {
-                    System.out.println("Yes");
                     Map<String, String> namedGroups = getNamedGroups(m);
-
-                    System.out.println("📌 Найденные группы и значения:"); // ← вывод 2
-                    for (Map.Entry<String, String> entry : namedGroups.entrySet()) {
-                        System.out.println("    " + entry.getKey() + " = " + entry.getValue());
-                    }
+                    logFoundGroups(namedGroups);
 
                     switch (model.actionType) {
                         case "report":
-                            String report = model.reportStructure;
-                            for (Map.Entry<String, String> entry : namedGroups.entrySet()) {
-                                report = report.replace("{" + entry.getKey() + "}", entry.getValue());
-                            }
-                            return report;
+                            return generateReport(model.reportStructure, namedGroups);
 
                         case "replace":
-                            String replacement = model.replacementValue != null ? model.replacementValue : "*****";
-                            String modifiedText = text;
-
-                            m.reset();
-                            while (m.find()) {
-                                for (String key : namedGroups.keySet()) {
-                                    String value = namedGroups.get(key);
-                                    if (value != null && !value.isEmpty()) {
-                                        modifiedText = modifiedText.replace(value, replacement);
-                                    }
-                                }
-                            }
-                            return modifiedText;
+                            return replaceText(text, model.replacementValue, namedGroups, m);
 
                         default:
-                            return "Неизвестное действие: " + model.actionType;
+                            return "Неизвестный тип действия: " + model.actionType;
                     }
                 }
             }
@@ -78,7 +56,40 @@ public class TextParser {
         return "Тип документа не определен";
     }
 
-    // Вытаскивает именованные группы
+    private static String generateReport(String template, Map<String, String> namedGroups) {
+        String report = template;
+        for (Map.Entry<String, String> entry : namedGroups.entrySet()) {
+            report = report.replace("{" + entry.getKey() + "}", entry.getValue());
+        }
+        return report;
+    }
+
+    private static String replaceText(String originalText, String replacement,
+                                      Map<String, String> namedGroups, Matcher matcher) {
+        if (replacement == null) {
+            replacement = "*****";
+        }
+
+        String modifiedText = originalText;
+        matcher.reset();
+
+        while (matcher.find()) {
+            for (String key : namedGroups.keySet()) {
+                String value = namedGroups.get(key);
+                if (value != null && !value.isEmpty()) {
+                    modifiedText = modifiedText.replace(value, replacement);
+                }
+            }
+        }
+        return modifiedText;
+    }
+
+    private static void logFoundGroups(Map<String, String> namedGroups) {
+        System.out.println("📌 Найденные группы и значения:");
+        namedGroups.forEach((key, value) ->
+                System.out.println("    " + key + " = " + value));
+    }
+
     private static Map<String, String> getNamedGroups(Matcher matcher) {
         Map<String, String> namedGroups = new LinkedHashMap<>();
         Pattern namedGroupPattern = Pattern.compile("\\(\\?<([a-zA-Z][a-zA-Z0-9]*)>");
@@ -87,13 +98,14 @@ public class TextParser {
         while (m.find()) {
             String groupName = m.group(1);
             try {
-                namedGroups.put(groupName, matcher.group(groupName));
+                String groupValue = matcher.group(groupName);
+                if (groupValue != null) {
+                    namedGroups.put(groupName, groupValue);
+                }
             } catch (IllegalArgumentException ignored) {
-                // Игнорируем если не найдена такая группа
+                // Группа не найдена - пропускаем
             }
         }
-
         return namedGroups;
     }
-
 }
