@@ -28,7 +28,6 @@ public class TemplateDataProcessor {
         process();
     }
 
-    // Перегруженный конструктор для Excel с координатами
     public TemplateDataProcessor(String name, String type, String description, List<ExcelPatternModel.CellCoordinate> coordinates, Boolean isLocal) {
         this.name = name;
         this.type = type;
@@ -39,12 +38,17 @@ public class TemplateDataProcessor {
     }
 
     public void process() {
-        if ("text".equalsIgnoreCase(type)) {
-            String regex = generateRegex();
-            System.out.println("Сгенерированная регулярка: " + regex);
-            exportTextTemplate();
-        } else if ("excel".equalsIgnoreCase(type)) {
-            exportExcelTemplate();
+        switch (type.toLowerCase()) {
+            case "text":
+                String regex = generateRegex();
+                System.out.println("Сгенерированная регулярка: " + regex);
+                exportTextTemplate(regex);
+                break;
+            case "excel":
+                exportExcelTemplate();
+                break;
+            default:
+                System.err.println("Неизвестный тип шаблона: " + type);
         }
     }
 
@@ -52,8 +56,7 @@ public class TemplateDataProcessor {
         return wordCount <= 1 ? "\\S+" : "(?:\\S+\\s+){" + (wordCount - 1) + "}\\S+";
     }
 
-    public void exportTextTemplate() {
-        String regex = generateRegex();
+    private void exportTextTemplate(String regex) {
         String triggerString = "(" + String.join("|", docIds) + ")";
 
         if ("отчет".equals(action)) {
@@ -71,29 +74,30 @@ public class TemplateDataProcessor {
                 "отчет".equals(action) ? reportText : null
         );
 
+        saveJson(Collections.singletonList(json), "doc");
+    }
+
+    private void exportExcelTemplate() {
+        System.out.println("Сработал exportExcelTemplate в TDP");
+        ExcelPatternModel excelJson = new ExcelPatternModel(description, coordinates);
+        saveJson(Collections.singletonList(excelJson), "excel");
+    }
+
+    private <T> void saveJson(List<T> jsonList, String subtype) {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            File dir1 = new File("templates\\doc");
-            File dir2 = new File("E:\\Java\\deeplomka\\intronet\\patterns\\doc");
+            File localDir = new File("templates", subtype);
+            File externalDir = new File("E:\\Java\\deeplomka\\intronet\\patterns", subtype);
 
-            // Создаём первую директорию при необходимости
-            if (!dir1.exists()) dir1.mkdir();
+            if (!localDir.exists()) localDir.mkdirs();
+            if (!isLocal && !externalDir.exists()) externalDir.mkdirs();
 
-            // Если не локально — создаём и вторую директорию
-            if (!isLocal && !dir2.exists()) dir2.mkdir();
-
-            // Подготовка списка шаблонов
-            List<TemplateJson> jsonList = new ArrayList<>();
-            jsonList.add(json);
-
-            // Сохраняем в первую директорию
-            File outFile1 = new File(dir1, name + ".json");
+            File outFile1 = new File(localDir, name + ".json");
             mapper.writerWithDefaultPrettyPrinter().writeValue(outFile1, jsonList);
             System.out.println("Шаблон сохранён в: " + outFile1.getAbsolutePath());
 
-            // Если не локально — сохраняем и во вторую директорию
             if (!isLocal) {
-                File outFile2 = new File(dir2, name + ".json");
+                File outFile2 = new File(externalDir, name + ".json");
                 mapper.writerWithDefaultPrettyPrinter().writeValue(outFile2, jsonList);
                 System.out.println("Шаблон также сохранён в: " + outFile2.getAbsolutePath());
             }
@@ -101,11 +105,10 @@ public class TemplateDataProcessor {
         } catch (IOException e) {
             System.err.println("Ошибка при сохранении JSON: " + e.getMessage());
         }
-
     }
 
     public String generateRegex() {
-        StringBuilder regexBuilder = new StringBuilder("(?i)"); // флаг игнорирования регистра
+        StringBuilder regexBuilder = new StringBuilder("(?i)");
         int groupIndex = 1;
 
         for (int i = 0; i < keywords.size(); i++) {
@@ -115,27 +118,22 @@ public class TemplateDataProcessor {
             int wordCount = keyword.getWordCount();
             String wordPattern = generateWordPattern(wordCount);
 
-            if (i > 0) {
-                // Добавим возможность наличия чего угодно между шаблонами (в разумных пределах)
-                regexBuilder.append(".*?");
-            }
+            if (i > 0) regexBuilder.append(".*?");
 
             switch (keyword.getPosition()) {
                 case "after":
                     regexBuilder
                             .append("(?:\\Q").append(key1).append("\\E)[:\\s\\r\\n]*")
-                            .append("(?<k").append(groupIndex++).append(">") // именованная группа
+                            .append("(?<k").append(groupIndex++).append(">")
                             .append(wordPattern).append(")");
                     break;
-
                 case "before":
                     regexBuilder
-                            .append("(?<k").append(groupIndex++).append(">") // именованная группа
+                            .append("(?<k").append(groupIndex++).append(">")
                             .append(wordPattern).append(")")
                             .append("[:\\s\\r\\n]*")
                             .append("(?:\\Q").append(key1).append("\\E)");
                     break;
-
                 case "between":
                     regexBuilder
                             .append("(?:\\Q").append(key1).append("\\E)[:\\s\\r\\n]*")
@@ -160,37 +158,5 @@ public class TemplateDataProcessor {
                 ", docIds=" + docIds +
                 ", keywords=" + keywords +
                 '}';
-    }
-
-    // Новая логика для excel шаблонов
-    private void exportExcelTemplate() {
-        // Формируем объект с нужной структурой
-        System.out.println("Сработал exportExcelTemplate в TDP");
-        ExcelPatternModel excelJson = new ExcelPatternModel(description, coordinates);
-
-        saveJson(Collections.singletonList(excelJson), "excel");
-    }
-
-    // Общий метод сохранения JSON с разделением папок
-    private <T> void saveJson(List<T> jsonList, String subtype) {
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            File dir1 = new File("templates");
-            File patternsDir = new File("patterns", subtype);
-
-            if (!dir1.exists()) dir1.mkdir();
-            if (!patternsDir.exists()) patternsDir.mkdirs();
-
-            File outFile1 = new File(dir1, name + ".json");
-            mapper.writerWithDefaultPrettyPrinter().writeValue(outFile1, jsonList);
-            System.out.println("Шаблон сохранён в: " + outFile1.getAbsolutePath());
-
-            File outFile2 = new File(patternsDir, name + ".json");
-            mapper.writerWithDefaultPrettyPrinter().writeValue(outFile2, jsonList);
-            System.out.println("Шаблон также сохранён в: " + outFile2.getAbsolutePath());
-
-        } catch (IOException e) {
-            System.err.println("Ошибка при сохранении JSON: " + e.getMessage());
-        }
     }
 }
