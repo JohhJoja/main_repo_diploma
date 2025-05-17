@@ -17,8 +17,8 @@ public class XLSParser {
         // 3. Извлекаем данные по координатам
         StringBuilder result = new StringBuilder();
         for (int[] coord : coordinates) {
-            int row = coord[0] - 1;  // Переводим в 0-based индекс
-            int col = coord[1] - 1;
+            int row = coord[0];  // Переводим в 0-based индекс
+            int col = coord[1];
 
             if (row < table.size() && col < table.get(row).size()) {
                 String value = table.get(row).get(col);

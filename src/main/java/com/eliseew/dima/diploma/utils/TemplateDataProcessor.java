@@ -1,10 +1,12 @@
 package com.eliseew.dima.diploma.utils;
 
+import com.eliseew.dima.diploma.utils.excel.ExcelPatternModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class TemplateDataProcessor {
@@ -12,6 +14,7 @@ public class TemplateDataProcessor {
     List<String> docIds;
     List<KeywordEntry> keywords;
     Boolean isLocal;
+    private List<ExcelPatternModel.CellCoordinate> coordinates;
 
     public TemplateDataProcessor(String name, String type, String description, String action, String reportText, List<String> docIds, List<KeywordEntry> keywords, Boolean isLocal) {
         this.name = name;
@@ -25,17 +28,31 @@ public class TemplateDataProcessor {
         process();
     }
 
+    // Перегруженный конструктор для Excel с координатами
+    public TemplateDataProcessor(String name, String type, String description, List<ExcelPatternModel.CellCoordinate> coordinates, Boolean isLocal) {
+        this.name = name;
+        this.type = type;
+        this.description = description;
+        this.coordinates = coordinates;
+        this.isLocal = isLocal;
+        process();
+    }
+
     public void process() {
-        String regex = generateRegex();
-        System.out.println("Сгенерированная регулярка: " + regex);
-        exportToJsonFile();
+        if ("text".equalsIgnoreCase(type)) {
+            String regex = generateRegex();
+            System.out.println("Сгенерированная регулярка: " + regex);
+            exportTextTemplate();
+        } else if ("excel".equalsIgnoreCase(type)) {
+            exportExcelTemplate();
+        }
     }
 
     private String generateWordPattern(int wordCount) {
         return wordCount <= 1 ? "\\S+" : "(?:\\S+\\s+){" + (wordCount - 1) + "}\\S+";
     }
 
-    public void exportToJsonFile() {
+    public void exportTextTemplate() {
         String regex = generateRegex();
         String triggerString = "(" + String.join("|", docIds) + ")";
 
@@ -56,8 +73,8 @@ public class TemplateDataProcessor {
 
         ObjectMapper mapper = new ObjectMapper();
         try {
-            File dir1 = new File("templates");
-            File dir2 = new File("E:\\Java\\deeplomka\\intronet\\patterns");
+            File dir1 = new File("templates\\doc");
+            File dir2 = new File("E:\\Java\\deeplomka\\intronet\\patterns\\doc");
 
             // Создаём первую директорию при необходимости
             if (!dir1.exists()) dir1.mkdir();
@@ -143,5 +160,37 @@ public class TemplateDataProcessor {
                 ", docIds=" + docIds +
                 ", keywords=" + keywords +
                 '}';
+    }
+
+    // Новая логика для excel шаблонов
+    private void exportExcelTemplate() {
+        // Формируем объект с нужной структурой
+        System.out.println("Сработал exportExcelTemplate в TDP");
+        ExcelPatternModel excelJson = new ExcelPatternModel(description, coordinates);
+
+        saveJson(Collections.singletonList(excelJson), "excel");
+    }
+
+    // Общий метод сохранения JSON с разделением папок
+    private <T> void saveJson(List<T> jsonList, String subtype) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            File dir1 = new File("templates");
+            File patternsDir = new File("patterns", subtype);
+
+            if (!dir1.exists()) dir1.mkdir();
+            if (!patternsDir.exists()) patternsDir.mkdirs();
+
+            File outFile1 = new File(dir1, name + ".json");
+            mapper.writerWithDefaultPrettyPrinter().writeValue(outFile1, jsonList);
+            System.out.println("Шаблон сохранён в: " + outFile1.getAbsolutePath());
+
+            File outFile2 = new File(patternsDir, name + ".json");
+            mapper.writerWithDefaultPrettyPrinter().writeValue(outFile2, jsonList);
+            System.out.println("Шаблон также сохранён в: " + outFile2.getAbsolutePath());
+
+        } catch (IOException e) {
+            System.err.println("Ошибка при сохранении JSON: " + e.getMessage());
+        }
     }
 }

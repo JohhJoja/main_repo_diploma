@@ -1,19 +1,23 @@
-package com.eliseew.dima.diploma.parsers;
+package com.eliseew.dima.diploma.utils.excel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
-public record ExcelPatternModel(String description, List<CellCoordinate> coordinates, String reportStructure) {
+public record ExcelPatternModel(String description, List<CellCoordinate> coordinates) {
     @JsonCreator
     public ExcelPatternModel(
             @JsonProperty("description") String description,
-            @JsonProperty("coordinates") List<CellCoordinate> coordinates,
-            @JsonProperty("reportStructure") String reportStructure) {
+            @JsonProperty("coordinates") List<CellCoordinate> coordinates
+            ) {
         this.description = description;
         this.coordinates = coordinates;
-        this.reportStructure = reportStructure;
+        }
+
+    public String reportStructure() {
+        System.out.println("Сработал reportStructure в ExcelPatternModel");
+        return "";
     }
 
     public record CellCoordinate(int row, int col) {

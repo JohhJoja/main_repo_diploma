@@ -1,4 +1,4 @@
-package com.eliseew.dima.diploma.parsers;
+package com.eliseew.dima.diploma.utils.text;
 
 public class DocPatternModel {
     public String description;

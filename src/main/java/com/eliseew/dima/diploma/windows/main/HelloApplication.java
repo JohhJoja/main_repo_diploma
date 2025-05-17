@@ -18,7 +18,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Map;
 
 import com.eliseew.dima.diploma.utils.TemplateJson;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -31,6 +34,8 @@ public class HelloApplication extends Application {
     private FileHandler handler;
     private String selectedTemplateName = null;
     private String selectedTemplateType = null; // "doc" или "excel"
+
+
 
     @Override
     public void start(Stage primaryStage) {
@@ -70,6 +75,7 @@ public class HelloApplication extends Application {
         templateBox.setPrefWidth(180);
         templateBox.setStyle("-fx-background-color: #e6f4ec;");
 
+
         // Центр
         templateDescriptionLabel.setWrapText(true);
         VBox centerBox = new VBox(10, new Label("Описание шаблона:"), templateDescriptionLabel);
@@ -87,17 +93,67 @@ public class HelloApplication extends Application {
         resultArea.setPromptText("Результаты будут здесь...");
         resultArea.setPrefHeight(300);
 
-        // Остальные обработчики событий остаются без изменений
         importTemplateItem.setOnAction(e -> {
-            // ... существующий код импорта
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Выберите шаблоны для импорта");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON файлы", "*.json"));
+            fileChooser.setInitialDirectory(new File("E:\\Java\\deeplomka\\intronet\\patterns"));
+
+            List<File> filesToImport = fileChooser.showOpenMultipleDialog(null);
+
+            if (filesToImport != null && !filesToImport.isEmpty()) {
+                for (File file : filesToImport) {
+                    String subfolder = file.getParentFile().getName(); // определим тип (doc или excel)
+                    File destinationDir = new File("templates\\" + subfolder);
+                    if (!destinationDir.exists()) {
+                        destinationDir.mkdirs();
+                    }
+
+                    File destFile = new File(destinationDir, file.getName());
+                    try {
+                        Files.copy(file.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+
+            templateTree.refresh();
         });
 
         exportTemplateItem.setOnAction(e -> {
-            // ... существующий код экспорта
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Выберите шаблоны для экспорта");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON файлы", "*.json"));
+            fileChooser.setInitialDirectory(new File("templates"));
+
+            List<File> filesToExport = fileChooser.showOpenMultipleDialog(null);
+
+            if (filesToExport != null && !filesToExport.isEmpty()) {
+                for (File file : filesToExport) {
+                    String subfolder = file.getParentFile().getName(); // определим тип (doc или excel)
+                    File exportTargetDir = new File("E:\\Java\\deeplomka\\intronet\\patterns\\" + subfolder);
+                    if (!exportTargetDir.exists()) {
+                        exportTargetDir.mkdirs();
+                    }
+
+                    File destFile = new File(exportTargetDir, file.getName());
+                    try {
+                        Files.copy(file.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+            templateTree.refresh();
         });
 
         aboutItem.setOnAction(e -> {
-            // ... существующий код
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("О программе");
+            alert.setHeaderText("Система обработки шаблонов");
+            alert.setContentText("заглушка");
+            alert.showAndWait();
         });
 
         exitItem.setOnAction(e -> {
@@ -259,7 +315,6 @@ public class HelloApplication extends Application {
         } catch (IOException e) {
             return "Ошибка чтения шаблона: " + e.getMessage();
         }
-
         return "Описание отсутствует";
     }
 
@@ -277,6 +332,12 @@ public class HelloApplication extends Application {
             }
         }
     }
+
+    private void updateTemplateList(TreeView<String> templateTree) {
+        templateTree.refresh();
+    }
+
+
 
     public static void main(String[] args) {
         launch(args);

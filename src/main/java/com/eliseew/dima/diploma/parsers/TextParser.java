@@ -1,5 +1,7 @@
 package com.eliseew.dima.diploma.parsers;
 
+import com.eliseew.dima.diploma.utils.text.DocPatternModel;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashMap;

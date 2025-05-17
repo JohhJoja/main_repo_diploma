@@ -1,5 +1,7 @@
 package com.eliseew.dima.diploma.parsers;
 
+import com.eliseew.dima.diploma.utils.excel.ExcelPatternModel;
+
 import java.io.File;
 import java.util.List;
 import java.util.ArrayList;

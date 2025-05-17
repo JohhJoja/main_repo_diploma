@@ -2,13 +2,16 @@ package com.eliseew.dima.diploma.windows;
 
 import com.eliseew.dima.diploma.utils.KeywordEntry;
 import com.eliseew.dima.diploma.utils.TemplateDataProcessor;
+import com.eliseew.dima.diploma.utils.excel.ExcelPatternModel;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +26,6 @@ public class TemplateCreationWindow {
         positionMap.put("после", "after");
         positionMap.put("между", "between");
     }
-
 
     public void show() {
 
@@ -95,6 +97,114 @@ public class TemplateCreationWindow {
         actionArea.setWrapText(true);
         actionArea.setVisible(false);
         actionArea.setDisable(true);
+
+        // Кнопка загрузки шаблона для Excel
+        Button downloadTemplateButton = new Button("Загрузить шаблон");
+        downloadTemplateButton.setVisible(false); // Скрыта по умолчанию
+
+        downloadTemplateButton.setOnAction(event -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Выберите шаблон Excel (xlsx)");
+
+            FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Excel файлы", "*.xlsx");
+            fileChooser.getExtensionFilters().add(extFilter);
+
+            File selectedFile = fileChooser.showOpenDialog(window);
+
+            if (selectedFile != null) {
+                try (org.apache.poi.ss.usermodel.Workbook workbook = org.apache.poi.ss.usermodel.WorkbookFactory.create(selectedFile)) {
+                    List<ExcelPatternModel.CellCoordinate> coords = new ArrayList<>();
+
+                    for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+                        org.apache.poi.ss.usermodel.Sheet sheet = workbook.getSheetAt(i);
+                        for (org.apache.poi.ss.usermodel.Row row : sheet) {
+                            for (org.apache.poi.ss.usermodel.Cell cell : row) {
+                                if (cell.getCellType() == org.apache.poi.ss.usermodel.CellType.STRING) {
+                                    if ("*".equals(cell.getStringCellValue().trim())) {
+                                        coords.add(new ExcelPatternModel.CellCoordinate(row.getRowNum(), cell.getColumnIndex()));
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Пример получения описания из UI — если нет, можно пустую строку
+                    String description = descriptionArea.getText();
+
+                    TemplateDataProcessor processor = new TemplateDataProcessor(
+                            nameField.getText(),
+                            "excel",
+                            description,
+                            coords,
+                            true // или false — зависит от контекста
+                    );
+
+                    processor.process();
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Ошибка");
+                    alert.setHeaderText("Ошибка при обработке Excel файла");
+                    alert.setContentText(ex.getMessage());
+                    alert.showAndWait();
+                }
+            } else {
+                System.out.println("Файл не выбран.");
+            }
+        });
+
+// Обработчик изменения выбора типа документа
+        typeCombo.setOnAction(e -> {
+            String selectedType = typeCombo.getValue();
+            boolean isText = "text".equals(selectedType);
+
+            // Показываем или скрываем поля в зависимости от типа
+            nameLabel.setVisible(true);
+            nameField.setVisible(true);
+
+            descriptionLabel.setVisible(true);
+            descriptionArea.setVisible(true);
+
+            if (isText) {
+                // При text показываем все поля (твой текущий интерфейс)
+                identifierLabel.setVisible(true);
+                identifierBox.setVisible(true);
+
+                keywordLabel.setVisible(true);
+                keywordWrapper.setVisible(true);
+
+                actionLabel.setVisible(true);
+                actionCombo.setVisible(true);
+
+                instructionLabel.setVisible(actionCombo.getValue() != null);
+                actionArea.setVisible(actionCombo.getValue() != null);
+                actionArea.setDisable(false);
+
+                downloadTemplateButton.setVisible(false);
+            } else if ("excel".equals(selectedType)) {
+                // При excel скрываем ненужные поля
+                identifierLabel.setVisible(false);
+                identifierBox.setVisible(false);
+
+                keywordLabel.setVisible(false);
+                keywordWrapper.setVisible(false);
+
+                actionLabel.setVisible(false);
+                actionCombo.setVisible(false);
+
+                instructionLabel.setVisible(false);
+                actionArea.setVisible(false);
+                actionArea.setDisable(true);
+
+                downloadTemplateButton.setVisible(true);
+            }
+        });
+
+// Добавляем кнопку загрузки в layout, например внизу рядом с кнопкой сохранения
+// Если у тебя есть контейнер bottomButtons, добавь туда
+
+
 
         actionCombo.setOnAction(e -> {
             String selected = actionCombo.getValue();
@@ -257,6 +367,7 @@ public class TemplateCreationWindow {
         bottomButtons.setRight(infoButton);
 
         layout.getChildren().add(bottomButtons);
+        bottomButtons.setCenter(downloadTemplateButton);
 
 
         Scene scene = new Scene(layout, 750, 700);

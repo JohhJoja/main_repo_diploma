@@ -1,5 +1,7 @@
 package com.eliseew.dima.diploma.parsers;
 
+import com.eliseew.dima.diploma.utils.excel.ExcelPatternModel;
+import com.eliseew.dima.diploma.utils.text.DocPatternModel;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
