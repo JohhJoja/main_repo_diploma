@@ -36,8 +36,8 @@ public class XLSXParser {
         List<String> values = new ArrayList<>();
 
         for (ExcelPatternModel.CellCoordinate coord : coords) {
-            int row = coord.row() - 1;
-            int col = coord.col() - 1;
+            int row = coord.row();
+            int col = coord.col();
 
             String value = (row < table.size() && col < table.get(row).size())
                     ? table.get(row).get(col)

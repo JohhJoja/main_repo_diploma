@@ -1,8 +1,0 @@
-[ {
-  "description" : "alala",
-  "trigger" : "(f56g7h8uji)",
-  "regex" : "(?i)(?:\\Q76vb8nuim\\E)[:\\s\\r\\n]*(?<k1>\\S+)",
-  "actionType" : "report",
-  "replacementValue" : null,
-  "reportStructure" : "{k1} k2"
-} ]

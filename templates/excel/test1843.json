@@ -1,0 +1,14 @@
+[ {
+  "description" : "deccccc2",
+  "coordinates" : [ {
+    "row" : 1,
+    "col" : 1
+  }, {
+    "row" : 2,
+    "col" : 0
+  }, {
+    "row" : 3,
+    "col" : 2
+  } ],
+  "reportStructure" : "k1 {1}\nk2 {2}\nk3 {3}"
+} ]

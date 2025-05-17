@@ -79,7 +79,7 @@ public class TemplateDataProcessor {
 
     private void exportExcelTemplate() {
         System.out.println("Сработал exportExcelTemplate в TDP");
-        ExcelPatternModel excelJson = new ExcelPatternModel(description, coordinates);
+        ExcelPatternModel excelJson = new ExcelPatternModel(description, coordinates, null);
         saveJson(Collections.singletonList(excelJson), "excel");
     }
 

@@ -1,8 +1,0 @@
-[ {
-  "description" : "y ui",
-  "trigger" : "(buno)",
-  "regex" : "(?i)(?:\\Qboni\\E)[:\\s\\r\\n]*(?<k1>\\S+)",
-  "actionType" : "report",
-  "replacementValue" : null,
-  "reportStructure" : "{k1}"
-} ]
