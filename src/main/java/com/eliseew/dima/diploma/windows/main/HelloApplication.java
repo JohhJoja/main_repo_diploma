@@ -1,7 +1,8 @@
 package com.eliseew.dima.diploma.windows.main;
 
 import com.eliseew.dima.diploma.utils.FileHandler;
-import com.eliseew.dima.diploma.windows.TemplateCreationWindow;
+import com.eliseew.dima.diploma.utils.excel.ExcelPatternModel;
+import com.eliseew.dima.diploma.windows.template.TemplateCreationWindow;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -21,9 +22,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
-import java.util.Map;
 
-import com.eliseew.dima.diploma.utils.TemplateJson;
+import com.eliseew.dima.diploma.utils.text.TemplateJson;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -309,8 +309,11 @@ public class HelloApplication extends Application {
                     return templates.get(0).getDescription();
                 }
             } else {
-                // Для Excel шаблонов можно добавить отдельную логику
-                return "Excel шаблон: " + templateName;
+                // Аналогичная логика для Excel, возможно с другим классом вместо TemplateJson
+                List<ExcelPatternModel> templates = mapper.readValue(file, new TypeReference<List<ExcelPatternModel>>() {});
+                if (!templates.isEmpty()) {
+                    return templates.get(0).getDescription();
+                }
             }
         } catch (IOException e) {
             return "Ошибка чтения шаблона: " + e.getMessage();

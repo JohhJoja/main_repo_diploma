@@ -27,6 +27,10 @@ public record ExcelPatternModel(String description, List<CellCoordinate> coordin
         return builder.toString().trim();
     }
 
+    public String getDescription() {
+        return description;
+    }
+
     public record CellCoordinate(int row, int col) {
         @JsonCreator
         public CellCoordinate(

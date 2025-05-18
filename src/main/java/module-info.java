@@ -15,12 +15,12 @@ module com.eliseew.dima.diploma {
     opens com.eliseew.dima.diploma.parsers to javafx.fxml;
     exports com.eliseew.dima.diploma.utils;
     opens com.eliseew.dima.diploma.utils to javafx.fxml;
-    exports com.eliseew.dima.diploma.windows;
-    opens com.eliseew.dima.diploma.windows to javafx.fxml;
+    opens com.eliseew.dima.diploma.windows.template to javafx.fxml;
     exports com.eliseew.dima.diploma.windows.main;
     opens com.eliseew.dima.diploma.windows.main to javafx.fxml;
     exports com.eliseew.dima.diploma.utils.text;
     opens com.eliseew.dima.diploma.utils.text to javafx.fxml;
     exports com.eliseew.dima.diploma.utils.excel;
     opens com.eliseew.dima.diploma.utils.excel to javafx.fxml;
+    exports com.eliseew.dima.diploma.windows.template;
 }

@@ -1,4 +1,4 @@
-package com.eliseew.dima.diploma.utils;
+package com.eliseew.dima.diploma.utils.text;
 
 public class TemplateJson {
 

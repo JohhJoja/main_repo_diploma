@@ -1,6 +1,6 @@
-package com.eliseew.dima.diploma.windows;
+package com.eliseew.dima.diploma.windows.template;
 
-import com.eliseew.dima.diploma.utils.KeywordEntry;
+import com.eliseew.dima.diploma.utils.text.KeywordEntry;
 import com.eliseew.dima.diploma.utils.TemplateDataProcessor;
 import com.eliseew.dima.diploma.utils.excel.ExcelPatternModel;
 import javafx.geometry.Insets;
