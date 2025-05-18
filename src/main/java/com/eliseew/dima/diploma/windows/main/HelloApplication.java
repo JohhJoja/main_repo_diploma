@@ -8,6 +8,7 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
@@ -29,11 +30,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class HelloApplication extends Application {
 
-    private Label templateDescriptionLabel = new Label("Описание шаблона будет здесь...");
+    private final Label templateDescriptionLabel = new Label("Описание шаблона будет здесь...");
     private List<File> selectedFiles;
     private FileHandler handler;
     private String selectedTemplateName = null;
-    private String selectedTemplateType = null; // "doc" или "excel"
+    private String selectedTemplateType = null;
     private TreeView<String> templateTree;
     private TreeItem<String> docTemplates;
     private TreeItem<String> excelTemplates;
@@ -41,6 +42,7 @@ public class HelloApplication extends Application {
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Парсер шаблонов");
+        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/com/eliseew/dima/diploma/image.jpg")));
 
         // Меню
         MenuBar menuBar = new MenuBar();
@@ -367,8 +369,6 @@ public class HelloApplication extends Application {
         loadTemplates(docTemplates, excelTemplates);
         templateTree.refresh();
     }
-
-
 
     public static void main(String[] args) {
         launch(args);
