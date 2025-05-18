@@ -3,6 +3,7 @@ package com.eliseew.dima.diploma.windows.template;
 import com.eliseew.dima.diploma.utils.text.KeywordEntry;
 import com.eliseew.dima.diploma.utils.TemplateDataProcessor;
 import com.eliseew.dima.diploma.utils.excel.ExcelPatternModel;
+import com.eliseew.dima.diploma.windows.main.HelloApplication;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -20,6 +21,16 @@ import java.util.Map;
 public class TemplateCreationWindow {
 
     Map<String, String> positionMap = new HashMap<>();
+    private ArrayList<ExcelPatternModel.CellCoordinate> excelCoordinates = null;
+    private File selectedExcelFile = null;
+    private boolean isExcelTemplateSelected = false;
+    private ArrayList<ExcelPatternModel.CellCoordinate> coords;
+//    private HelloApplication mainApp;
+
+//    public TemplateCreationWindow(HelloApplication mainApp) {
+//        this.mainApp = mainApp;
+//    }
+
 
     public TemplateCreationWindow() {
         positionMap.put("до", "before");
@@ -98,6 +109,7 @@ public class TemplateCreationWindow {
         actionArea.setVisible(false);
         actionArea.setDisable(true);
 
+
         // Кнопка загрузки шаблона для Excel
         Button downloadTemplateButton = new Button("Загрузить шаблон");
         downloadTemplateButton.setVisible(false); // Скрыта по умолчанию
@@ -109,11 +121,11 @@ public class TemplateCreationWindow {
             FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Excel файлы", "*.xlsx");
             fileChooser.getExtensionFilters().add(extFilter);
 
-            File selectedFile = fileChooser.showOpenDialog(window);
+            File file = fileChooser.showOpenDialog(window);
 
-            if (selectedFile != null) {
-                try (org.apache.poi.ss.usermodel.Workbook workbook = org.apache.poi.ss.usermodel.WorkbookFactory.create(selectedFile)) {
-                    List<ExcelPatternModel.CellCoordinate> coords = new ArrayList<>();
+            if (file != null) {
+                try (org.apache.poi.ss.usermodel.Workbook workbook = org.apache.poi.ss.usermodel.WorkbookFactory.create(file)) {
+                    coords = new ArrayList<>();
 
                     for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
                         org.apache.poi.ss.usermodel.Sheet sheet = workbook.getSheetAt(i);
@@ -128,18 +140,16 @@ public class TemplateCreationWindow {
                         }
                     }
 
-                    // Пример получения описания из UI — если нет, можно пустую строку
-                    String description = descriptionArea.getText();
+                    // Сохраняем во временные переменные
+                    selectedExcelFile = file;
+                    excelCoordinates = coords;
+                    isExcelTemplateSelected = true;
 
-                    TemplateDataProcessor processor = new TemplateDataProcessor(
-                            nameField.getText(),
-                            "excel",
-                            description,
-                            coords,
-                            true // или false — зависит от контекста
-                    );
-
-                    processor.process();
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Шаблон загружен");
+                    alert.setHeaderText("Excel шаблон успешно загружен");
+                    alert.setContentText("Нажмите 'Сохранить шаблон', чтобы завершить сохранение.");
+                    alert.showAndWait();
 
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -153,6 +163,7 @@ public class TemplateCreationWindow {
                 System.out.println("Файл не выбран.");
             }
         });
+
 
 // Обработчик изменения выбора типа документа
         typeCombo.setOnAction(e -> {
@@ -245,7 +256,28 @@ public class TemplateCreationWindow {
             String action = actionCombo.getValue();
             String reportText = actionArea.getText();
 
-            // Проверка на пустые поля
+            Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+            confirmAlert.setTitle("Общий доступ");
+            confirmAlert.setHeaderText("Сделать шаблон общедоступным?");
+            confirmAlert.setContentText("Если выбрать 'Нет', шаблон будет сохранён только локально.");
+
+            ButtonType yesButton = new ButtonType("Да");
+            ButtonType noButton = new ButtonType("Нет");
+            ButtonType cancelButton = new ButtonType("Отмена", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+            confirmAlert.getButtonTypes().setAll(yesButton, noButton, cancelButton);
+
+            confirmAlert.showAndWait().ifPresent(response -> {
+                if (response == yesButton || response == noButton) {
+                    Boolean isLocal = !(response == yesButton);
+                    if (isExcelTemplateSelected){
+                        TemplateDataProcessor TDP = new TemplateDataProcessor(name,
+                                type,
+                                description,
+                                coords,
+                                isLocal);
+                    } else {
+
             if (name.isEmpty() || description.isEmpty() || action == null || action.isEmpty()) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Ошибка");
@@ -304,29 +336,28 @@ public class TemplateCreationWindow {
                     }
                 }
             }
-
-            Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
-            confirmAlert.setTitle("Общий доступ");
-            confirmAlert.setHeaderText("Сделать шаблон общедоступным?");
-            confirmAlert.setContentText("Если выбрать 'Нет', шаблон будет сохранён только локально.");
-
-            ButtonType yesButton = new ButtonType("Да");
-            ButtonType noButton = new ButtonType("Нет");
-            ButtonType cancelButton = new ButtonType("Отмена", ButtonBar.ButtonData.CANCEL_CLOSE);
-
-            confirmAlert.getButtonTypes().setAll(yesButton, noButton, cancelButton);
-
-            confirmAlert.showAndWait().ifPresent(response -> {
-                if (response == yesButton || response == noButton) {
-                    Boolean isLocal = !(response == yesButton);
-                    TemplateDataProcessor TDP = new TemplateDataProcessor(name, type, description, action, reportText, docIds, keywords, isLocal);
-
+                        TemplateDataProcessor TDP = new TemplateDataProcessor(name, type, description, action, reportText, docIds, keywords, isLocal);
+                    }
                 } else {
                     System.out.println("Сохранение отменено.");
                 }
+                //mainApp.refreshTemplateTree(mainApp.getTemplateTree(), mainApp.getDocTemplates(), mainApp.getExcelTemplates());
+
             });
 
         });
+
+
+
+
+
+
+
+
+
+
+
+
 
         // Кнопка информации
         Button infoButton = new Button("i");

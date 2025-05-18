@@ -34,8 +34,9 @@ public class HelloApplication extends Application {
     private FileHandler handler;
     private String selectedTemplateName = null;
     private String selectedTemplateType = null; // "doc" или "excel"
-
-
+    private TreeView<String> templateTree;
+    private TreeItem<String> docTemplates;
+    private TreeItem<String> excelTemplates;
 
     @Override
     public void start(Stage primaryStage) {
@@ -56,25 +57,25 @@ public class HelloApplication extends Application {
         menuBar.getMenus().addAll(fileMenu, helpMenu);
 
         // Левая панель - шаблоны
-        TreeView<String> templateTree = new TreeView<>();
+        templateTree = new TreeView<>();
         TreeItem<String> rootItem = new TreeItem<>("Шаблоны");
         templateTree.setRoot(rootItem);
         templateTree.setShowRoot(false);
 
         // Подкатегории
-        TreeItem<String> docTemplates = new TreeItem<>("Документы");
-        TreeItem<String> excelTemplates = new TreeItem<>("Excel");
+        docTemplates = new TreeItem<>("Документы");
+        excelTemplates = new TreeItem<>("Excel");
         rootItem.getChildren().addAll(docTemplates, excelTemplates);
 
         Button createButton = new Button("Создать");
         Button deleteButton = new Button("Удалить");
+        Button refreshButton = new Button("Обновить список");
         Button clearSelectionButton = new Button("Отменить выбор");
 
-        VBox templateBox = new VBox(10, new Label("Список шаблонов:"), templateTree, createButton, deleteButton, clearSelectionButton);
+        VBox templateBox = new VBox(10, new Label("Список шаблонов:"), templateTree, refreshButton, createButton, deleteButton, clearSelectionButton);
         templateBox.setPadding(new Insets(10));
         templateBox.setPrefWidth(180);
         templateBox.setStyle("-fx-background-color: #e6f4ec;");
-
 
         // Центр
         templateDescriptionLabel.setWrapText(true);
@@ -92,6 +93,8 @@ public class HelloApplication extends Application {
         TextArea resultArea = new TextArea();
         resultArea.setPromptText("Результаты будут здесь...");
         resultArea.setPrefHeight(300);
+
+        refreshButton.setOnAction(event -> refreshTemplateTree(templateTree, docTemplates, excelTemplates));
 
         importTemplateItem.setOnAction(e -> {
             FileChooser fileChooser = new FileChooser();
@@ -112,6 +115,7 @@ public class HelloApplication extends Application {
                     File destFile = new File(destinationDir, file.getName());
                     try {
                         Files.copy(file.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                        refreshTemplateTree(templateTree, docTemplates, excelTemplates);
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }
@@ -171,6 +175,28 @@ public class HelloApplication extends Application {
 
         Scene scene = new Scene(root, 900, 600);
 
+        deleteButton.setOnAction(e -> {
+            if (selectedTemplateName != null && selectedTemplateType != null) {
+                File fileToDelete = new File("templates/" + selectedTemplateType, selectedTemplateName + ".json");
+                if (fileToDelete.exists()) {
+                    boolean deleted = fileToDelete.delete();
+                    if (deleted) {
+                        templateDescriptionLabel.setText("Шаблон удалён: " + selectedTemplateName);
+                        selectedTemplateName = null;
+                        selectedTemplateType = null;
+                        refreshTemplateTree(templateTree, docTemplates, excelTemplates);
+                    } else {
+                        templateDescriptionLabel.setText("Не удалось удалить шаблон.");
+                    }
+                } else {
+                    templateDescriptionLabel.setText("Файл шаблона не найден.");
+                }
+            } else {
+                templateDescriptionLabel.setText("Сначала выберите шаблон для удаления.");
+            }
+        });
+
+
         clearSelectionButton.setOnAction(e -> {
             templateTree.getSelectionModel().clearSelection();
             selectedTemplateName = null;
@@ -181,6 +207,7 @@ public class HelloApplication extends Application {
         createButton.setOnAction(e -> {
             TemplateCreationWindow creationWindow = new TemplateCreationWindow();
             creationWindow.show();
+//            refreshTemplateTree(templateTree, docTemplates, excelTemplates);
         });
 
         loadButton.setOnAction(e -> {
@@ -336,7 +363,8 @@ public class HelloApplication extends Application {
         }
     }
 
-    private void updateTemplateList(TreeView<String> templateTree) {
+    public void refreshTemplateTree(TreeView<String> templateTree, TreeItem<String> docTemplates, TreeItem<String> excelTemplates) {
+        loadTemplates(docTemplates, excelTemplates);
         templateTree.refresh();
     }
 
@@ -345,4 +373,5 @@ public class HelloApplication extends Application {
     public static void main(String[] args) {
         launch(args);
     }
+
 }

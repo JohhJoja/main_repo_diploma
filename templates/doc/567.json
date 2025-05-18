@@ -1,0 +1,8 @@
+[ {
+  "description" : "ин8гтшь",
+  "trigger" : "(щ о)",
+  "regex" : "(?i)(?:\\Qщ \\E)[:\\s\\r\\n]*(?<k1>\\S+)",
+  "actionType" : "report",
+  "replacementValue" : null,
+  "reportStructure" : "д"
+} ]
